@@ -1,0 +1,2 @@
+import InstructorNotificationsScreen from "@/screens/instructor/InstructorNotificationsScreen"
+export default InstructorNotificationsScreen

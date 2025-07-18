@@ -1,50 +1,51 @@
-# Welcome to your Expo app 👋
+# FitFlow App - Estrutura e Instruções
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Este projeto utiliza [Expo](https://expo.dev) e segue uma arquitetura modular baseada em pastas dentro de `src/`.
 
-## Get started
+## Primeiros Passos
 
-1. Install dependencies
-
+1. Instale as dependências:
    ```bash
    npm install
    ```
-
-2. Start the app
-
+2. Inicie o app:
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+## Estrutura de Pastas
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Todo o código-fonte está centralizado em `src/`:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+src/
+├── app/           # Rotas e telas principais (Expo Router)
+├── assets/        # Imagens, fontes, ícones
+├── components/    # Componentes reutilizáveis
+│   ├── common/
+│   ├── forms/
+│   ├── screens/
+│   └── ui/
+├── constants/     # Constantes globais
+├── hooks/         # Hooks customizados
+├── screens/       # Telas organizadas por domínio
+│   ├── auth/
+│   ├── instructor/
+│   └── student/
+├── services/      # Serviços de API, Supabase, etc.
+│   ├── api/
+│   └── supabase/
+├── types/         # Tipagens globais
+├── utils/         # Funções utilitárias
+├── scripts/       # Scripts auxiliares
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Observações
 
-## Learn more
+- Use sempre caminhos relativos a partir de `src/`.
+- O arquivo `tsconfig.json` já está configurado para suportar imports com `@/`.
+- Para adicionar novas telas, utilize as pastas em `src/screens/` ou `src/app/` conforme o fluxo.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Mais informações
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Consulte o PRD.md para detalhes de requisitos e arquitetura.

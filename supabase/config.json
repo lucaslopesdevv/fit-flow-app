@@ -1,0 +1,33 @@
+{
+  "auth": {
+    "email": {
+      "enable_signup": true,
+      "double_confirm_changes": true,
+      "enable_confirmations": true
+    },
+    "external": {
+      "enable_signup": false
+    },
+    "redirects": {
+      "signup": "fit-flow://login",
+      "invite": "fit-flow://login",
+      "confirm": "fit-flow://login",
+      "recover": "fit-flow://reset-password",
+      "callback": "fit-flow://callback"
+    },
+    "mailer": {
+      "site_url": "fit-flow://",
+      "subjects": {
+        "confirmation": "Confirme seu email - FitFlow",
+        "recovery": "Recuperação de Senha - FitFlow",
+        "magic_link": "Link de Acesso - FitFlow",
+        "email_change": "Confirme seu novo email - FitFlow",
+        "invite": "Convite para o FitFlow"
+      },
+      "templates": {
+        "confirmation": "email-templates/confirmation",
+        "recovery": "email-templates/reset-password"
+      }
+    }
+  }
+}
