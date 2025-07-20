@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useCallback, useMemo, memo } from "react"
 import {
   View,
   FlatList,
@@ -17,7 +17,10 @@ import { ThemedText } from "@/components/ThemedText"
 import { useAuth } from "@/hooks/useAuth"
 import { Exercise } from "@/types/database"
 import { Loading } from "@/components/common/Loading"
+import LazyImage, { ImagePlaceholder } from "@/components/common/LazyImage"
 import ExerciseForm from "@/components/forms/ExerciseForm"
+import { debounce } from "@/utils/debounce"
+import { exerciseCache, cacheUtils } from "@/utils/cache"
 
 const MUSCLE_GROUPS = [
   "Peito",
@@ -30,7 +33,7 @@ const MUSCLE_GROUPS = [
   "Glúteos",
 ]
 
-export default function ExerciseListScreen() {
+const ExerciseListScreen = memo(() => {
   const { user, loading: loadingAuth } = useAuth()
   const router = useRouter()
   const [exercises, setExercises] = useState<Exercise[]>([])
@@ -40,7 +43,6 @@ export default function ExerciseListScreen() {
   const [group, setGroup] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
-  const searchTimeout = useRef<any>(null)
 
   useEffect(() => {
     if (!loadingAuth && (!user || user.role !== "instructor")) {
@@ -49,33 +51,95 @@ export default function ExerciseListScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
-  useEffect(() => {
-    if (user && user.role === "instructor") {
-      if (searchTimeout.current) clearTimeout(searchTimeout.current)
-      searchTimeout.current = setTimeout(() => {
-        fetchExercises()
-      }, 400)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [group, search])
-
-  async function fetchExercises() {
+  const fetchExercises = useCallback(async (searchTerm: string = "", muscleGroup: string | null = null) => {
     setLoading(true)
     setError(null)
-    let query = supabase.from("exercises").select("*")
-    if (group) query = query.eq("muscle_group", group)
-    if (search) query = query.ilike("name", `%${search}%`)
-    const { data, error } = await query
-    if (error) setError(error.message)
-    else setExercises(data || [])
-    setLoading(false)
-  }
+    
+    // Generate cache key
+    const cacheKey = cacheUtils.getExerciseQueryKey(searchTerm, muscleGroup || undefined)
+    
+    // Check cache first
+    const cachedExercises = exerciseCache.get<Exercise[]>(cacheKey)
+    if (cachedExercises) {
+      setExercises(cachedExercises)
+      setLoading(false)
+      return
+    }
+    
+    try {
+      let query = supabase.from("exercises").select("*")
+      if (muscleGroup) query = query.eq("muscle_group", muscleGroup)
+      if (searchTerm) query = query.ilike("name", `%${searchTerm}%`)
+      
+      const { data, error } = await query.order('name')
+      
+      if (error) {
+        setError(error.message)
+      } else {
+        const exerciseData = data || []
+        setExercises(exerciseData)
+        
+        // Cache the results for 10 minutes
+        exerciseCache.set(cacheKey, exerciseData, 10 * 60 * 1000)
+      }
+    } catch (err) {
+      setError("Erro ao carregar exercícios")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-  function clearFilters() {
+  // Debounced fetch function
+  const debouncedFetchExercises = useMemo(
+    () => debounce(async (searchTerm: string, muscleGroup: string | null) => {
+      await fetchExercises(searchTerm, muscleGroup)
+    }, 300), // 300ms debounce as per requirements
+    [fetchExercises]
+  )
+
+  useEffect(() => {
+    if (user && user.role === "instructor") {
+      debouncedFetchExercises(search, group)
+    }
+  }, [user, search, group, debouncedFetchExercises])
+
+  const clearFilters = useCallback(() => {
     setSearch("")
     setGroup(null)
     setSuccess("Filtros limpos com sucesso!")
-  }
+  }, [])
+
+  // Optimization functions for FlatList performance
+  const keyExtractor = useCallback((item: Exercise) => item.id, [])
+  
+  const getItemLayout = useCallback((_: any, index: number) => ({
+    length: 80, // Approximate height of exercise card
+    offset: 80 * index,
+    index,
+  }), [])
+
+  const renderExerciseItem = useCallback(({ item }: { item: Exercise }) => (
+    <Card
+      style={styles.card}
+      accessible
+      accessibilityLabel={`Exercício ${item.name}`}
+    >
+      {item.thumbnail_url ? (
+        <LazyImage
+          source={{ uri: item.thumbnail_url }}
+          style={styles.thumb}
+          placeholder={<ImagePlaceholder style={styles.thumb} />}
+          accessibilityLabel={`Thumbnail de ${item.name}`}
+        />
+      ) : (
+        <ImagePlaceholder style={styles.thumb} />
+      )}
+      <View style={{ flex: 1 }}>
+        <ThemedText type="subtitle">{item.name}</ThemedText>
+        <ThemedText>{item.muscle_group}</ThemedText>
+      </View>
+    </Card>
+  ), [])
 
   if (loadingAuth) return <Loading />
 
@@ -91,7 +155,7 @@ export default function ExerciseListScreen() {
           onSuccess={() => {
             setShowModal(false)
             setSuccess("Exercício cadastrado com sucesso!")
-            fetchExercises()
+            fetchExercises(search, group)
           }}
         />
       </Modal>
@@ -151,30 +215,22 @@ export default function ExerciseListScreen() {
       )}
       <FlatList
         data={exercises}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Card
-            style={styles.card}
-            accessible
-            accessibilityLabel={`Exercício ${item.name}`}
-          >
-            {item.thumbnail_url && (
-              <Image
-                source={{ uri: item.thumbnail_url }}
-                style={styles.thumb}
-                accessibilityLabel={`Thumbnail de ${item.name}`}
-              />
-            )}
-            <View style={{ flex: 1 }}>
-              <ThemedText type="subtitle">{item.name}</ThemedText>
-              <ThemedText>{item.muscle_group}</ThemedText>
-            </View>
-          </Card>
-        )}
+        keyExtractor={keyExtractor}
+        renderItem={renderExerciseItem}
+        getItemLayout={getItemLayout}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        initialNumToRender={10}
+        windowSize={10}
       />
     </View>
   )
-}
+})
+
+ExerciseListScreen.displayName = 'ExerciseListScreen'
+
+export default ExerciseListScreen
 
 const styles = StyleSheet.create({
   card: { flexDirection: "row", alignItems: "center", marginBottom: 12 },

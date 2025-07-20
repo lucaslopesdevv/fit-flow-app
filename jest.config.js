@@ -18,7 +18,7 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-navigation|expo|@expo|react-native-paper|react-native-vector-icons|react-native-gesture-handler|react-native-reanimated|@supabase)/)',
+    'node_modules/(?!(react-native|@react-native|@react-navigation|expo|@expo|react-native-paper|react-native-vector-icons|react-native-gesture-handler|react-native-reanimated|@supabase|react-native-svg)/)',
   ],
   testEnvironment: 'node',
   testPathIgnorePatterns: [

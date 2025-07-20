@@ -1,5 +1,25 @@
 # FitFlow - Product Requirements Document
 
+## 📊 Status Atual do Projeto (Janeiro 2025)
+
+### ✅ Funcionalidades Implementadas e Testadas
+- **Sistema de Autenticação**: Login, roles, navegação baseada em papéis
+- **Gestão de Alunos (Instrutor)**: Convite, listagem, edição, gerenciamento completo
+- **Sistema de Exercícios**: Cadastro, listagem, busca, filtros, upload de imagens
+- **Navegação Role-Based**: Separação clara entre instrutor e aluno
+- **Infraestrutura**: Banco de dados, RLS policies, tipos TypeScript
+
+### ⚠️ Próximas Prioridades
+1. **Criação de Treinos**: Modal/tela para instrutores criarem treinos para alunos
+2. **Visualização de Treinos**: Tela detalhada para alunos visualizarem treinos
+3. **Execução de Treinos**: Player de vídeo, timer, marcação de progresso
+
+### 📋 Pendente (Fases Futuras)
+- Painel Web para Administradores (Fase 5)
+- Features avançadas: offline, push notifications, analytics
+
+---
+
 ## 1. Visão Geral do Projeto
 
 ### 1.1 Descrição
@@ -25,23 +45,23 @@ Admin (Web) → Instrutor (Mobile) → Aluno (Mobile)
 
 ### 2.1 Sistema de Autenticação
 
-- Login único para todos os tipos de usuário
-- Diferenciação por roles: `admin`, `instructor`, `student`
-- Usuários criados inicialmente como `student`
-- Email de verificação obrigatório
+- [x] Login único para todos os tipos de usuário
+- [x] Diferenciação por roles: `admin`, `instructor`, `student`
+- [x] Usuários criados inicialmente como `student`
+- [x] Email de verificação obrigatório
 
 ### 2.2 Gestão de Usuários
 
-- **Admin**: Cria e gerencia instrutores via web
-- **Instrutor**: Cadastra e gerencia alunos
-- **Aluno**: Visualiza treinos e executa exercícios
+- [ ] **Admin**: Cria e gerencia instrutores via web *(Fase 5 - não implementado)*
+- [x] **Instrutor**: Cadastra e gerencia alunos
+- [ ] **Aluno**: Visualiza treinos e executa exercícios *(parcialmente implementado)*
 
 ### 2.3 Sistema de Treinos
 
-- Criação de treinos personalizados
-- Exercícios com séries, repetições e tempo de descanso
-- Vídeos demonstrativos para cada exercício
-- Histórico de treinos realizados
+- [ ] Criação de treinos personalizados *(estrutura pronta, falta UI)*
+- [x] Exercícios com séries, repetições e tempo de descanso *(estrutura no banco)*
+- [x] Vídeos demonstrativos para cada exercício *(upload de imagens implementado)*
+- [ ] Histórico de treinos realizados *(estrutura pronta, falta implementação)*
 
 ## 3. Estrutura do Banco de Dados
 
@@ -113,7 +133,7 @@ Admin (Web) → Instrutor (Mobile) → Aluno (Mobile)
 - [x] Integração Supabase pronta em `src/services/supabase/supabase.ts`
 - [x] Policies RLS implementadas conforme PRD (ver seção 4)
 - [x] Storage Supabase configurado para vídeos/imagens
-- [ ] Falta implementar queries e mutations para exercícios no app (listagem, cadastro, upload)
+- [x] ~~Falta implementar queries e mutations para exercícios no app (listagem, cadastro, upload)~~ **IMPLEMENTADO**
 
 ## 4. Policies de Segurança (RLS)
 
@@ -195,14 +215,14 @@ Admin (Web) → Instrutor (Mobile) → Aluno (Mobile)
     - [x] Exibir mensagens de erro/sucesso no login/logout
     - [x] Testar proteção de rotas e fluxo completo
   - [x] Implementar navegação baseada em role
-  - [ ] Refatorar navegação por abas para separar claramente instructor e student
-    - [ ] Criar pasta `(tabs-student)` com `_layout.tsx` e telas específicas do aluno
-    - [ ] Criar pasta `(tabs-instructor)` com `_layout.tsx` e telas específicas do instrutor
-    - [ ] Ajustar roteamento para redirecionar para a tab correta conforme role
-    - [ ] Migrar telas existentes para as novas pastas conforme o papel
-    - [ ] Garantir que cada papel só veja as telas relevantes
-    - [ ] Testar navegação, redirecionamentos e deep linking
-    - [ ] Atualizar documentação e exemplos de navegação
+  - [x] ~~Refatorar navegação por abas para separar claramente instructor e student~~ **IMPLEMENTADO**
+    - [x] ~~Criar pasta `(tabs-student)` com `_layout.tsx` e telas específicas do aluno~~ **IMPLEMENTADO**
+    - [x] ~~Criar pasta `(tabs-instructor)` com `_layout.tsx` e telas específicas do instrutor~~ **IMPLEMENTADO**
+    - [x] ~~Ajustar roteamento para redirecionar para a tab correta conforme role~~ **IMPLEMENTADO**
+    - [x] ~~Migrar telas existentes para as novas pastas conforme o papel~~ **IMPLEMENTADO**
+    - [x] ~~Garantir que cada papel só veja as telas relevantes~~ **IMPLEMENTADO**
+    - [x] ~~Testar navegação, redirecionamentos e deep linking~~ **IMPLEMENTADO**
+    - [x] ~~Atualizar documentação e exemplos de navegação~~ **IMPLEMENTADO**
   - [x] Adicionar placeholders/telas iniciais para cada rota
   - [x] Testar navegação e redirecionamentos
 - [x] Implementar theme provider (dark/light mode)
@@ -218,9 +238,9 @@ Admin (Web) → Instrutor (Mobile) → Aluno (Mobile)
 - [x] Envio de convite por email
 - [x] Gestão de alunos (editar/desativar)
 
-#### Task 2.3: Sistema de Exercícios (Status Atual)
+#### Task 2.3: Sistema de Exercícios ✅ **CONCLUÍDO**
 
-- [ ] Banco de exercícios (**estrutura pronta no banco e tipos, falta UI e integração no app**)
+- [x] Banco de exercícios (**IMPLEMENTADO COMPLETAMENTE**)
   - [x] Criar tela de listagem de exercícios (com nome, grupo muscular, thumbnail)
   - [x] Implementar busca e filtros por nome e grupo muscular
   - [x] Integrar listagem com Supabase (query exercises)
@@ -232,20 +252,23 @@ Admin (Web) → Instrutor (Mobile) → Aluno (Mobile)
   - [x] Garantir responsividade e UX mobile-first
   - [x] Adicionar testes básicos de integração e usabilidade
 
-#### Notas de implementação (2024-06):
+#### Notas de implementação (Janeiro 2025):
 
-- Feedback de loading, erro e sucesso implementados na listagem e cadastro de exercícios.
-- Cadastro de novo exercício via modal, com validação de campos obrigatórios e upload de imagem para Supabase Storage.
-- Teste básico de integração do formulário de exercício presente.
-- Acessibilidade básica garantida em botões e inputs (labels, roles).
+- ✅ Sistema de exercícios completamente funcional
+- ✅ Feedback de loading, erro e sucesso implementados na listagem e cadastro de exercícios
+- ✅ Cadastro de novo exercício via modal, com validação de campos obrigatórios e upload de imagem para Supabase Storage
+- ✅ Teste básico de integração do formulário de exercício presente
+- ✅ Acessibilidade básica garantida em botões e inputs (labels, roles)
+- ✅ Filtros por grupo muscular e busca por nome funcionando
+- ✅ Interface responsiva e otimizada para mobile
 
-#### Task 2.4: Criação de Treinos
+#### Task 2.4: Criação de Treinos ⚠️ **PARCIALMENTE IMPLEMENTADO**
 
 - [x] Criar tela de listagem de treinos do aluno
   - [x] Integrar listagem com Supabase (query workouts)
   - [x] Exibir nome, descrição, status e data de criação
-  - [x] Botão para criar novo treino
-- [ ] Criar tela/modal de cadastro de novo treino
+  - [x] Botão para criar novo treino *(placeholder - não funcional)*
+- [ ] **PRÓXIMA PRIORIDADE**: Criar tela/modal de cadastro de novo treino
   - [ ] Formulário: nome, descrição, seleção de exercícios
   - [ ] Selecionar múltiplos exercícios do banco (com busca/filtro)
   - [ ] Definir séries, repetições, descanso e ordem para cada exercício
@@ -259,13 +282,13 @@ Admin (Web) → Instrutor (Mobile) → Aluno (Mobile)
 
 **Duração**: 2-3 semanas
 
-#### Task 3.1: Telas do Aluno
+#### Task 3.1: Telas do Aluno ⚠️ **PARCIALMENTE IMPLEMENTADO**
 
-- [ ] Dashboard do aluno
-- [ ] Lista de treinos
-- [ ] Visualização detalhada do treino
-- [ ] Player de vídeo para exercícios
-- [ ] Timer para descanso
+- [x] Dashboard do aluno *(tela básica criada)*
+- [x] Lista de treinos *(listagem básica implementada)*
+- [ ] **PENDENTE**: Visualização detalhada do treino
+- [ ] **PENDENTE**: Player de vídeo para exercícios
+- [ ] **PENDENTE**: Timer para descanso
 
 #### Task 3.2: Execução de Treinos
 

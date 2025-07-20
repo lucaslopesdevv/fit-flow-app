@@ -88,5 +88,37 @@ jest.mock('@/services/supabase/supabase', () => ({
   }
 }))
 
+// Mock React Native Paper components
+jest.mock('react-native-paper', () => {
+  const RNPaper = jest.requireActual('react-native-paper')
+  return {
+    ...RNPaper,
+    TextInput: ({ children, ...props }) => {
+      const React = require('react')
+      const { TextInput: RNTextInput } = require('react-native')
+      return React.createElement(RNTextInput, props, children)
+    },
+    Button: ({ children, title, onPress, ...props }) => {
+      const React = require('react')
+      const { TouchableOpacity, Text } = require('react-native')
+      return React.createElement(
+        TouchableOpacity,
+        { onPress, ...props },
+        React.createElement(Text, {}, title || children)
+      )
+    },
+    Card: ({ children, ...props }) => {
+      const React = require('react')
+      const { View } = require('react-native')
+      return React.createElement(View, props, children)
+    },
+    HelperText: ({ children, ...props }) => {
+      const React = require('react')
+      const { Text } = require('react-native')
+      return React.createElement(Text, props, children)
+    },
+  }
+})
+
 // Global test environment setup
 global.__DEV__ = true
