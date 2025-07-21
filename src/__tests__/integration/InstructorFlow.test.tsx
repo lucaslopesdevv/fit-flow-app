@@ -29,7 +29,7 @@ jest.mock('@/services/supabase/supabase', () => ({
     auth: {
       getSession: jest.fn(),
       onAuthStateChange: jest.fn(() => ({
-        data: { subscription: { unsubscribe: jest.fn() } }
+        data: { subscription: { unsubscribe: jest.fn() } },
       })),
       signInWithPassword: jest.fn(),
       signOut: jest.fn(),
@@ -37,11 +37,11 @@ jest.mock('@/services/supabase/supabase', () => ({
     from: jest.fn(() => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
-          single: jest.fn()
-        }))
-      }))
-    }))
-  }
+          single: jest.fn(),
+        })),
+      })),
+    })),
+  },
 }))
 
 describe('Instructor Flow Integration Tests', () => {
@@ -56,32 +56,31 @@ describe('Instructor Flow Integration Tests', () => {
         user: {
           id: 'instructor-123',
           email: 'instructor@test.com',
-          role: 'instructor'
+          role: 'instructor',
         },
-        access_token: 'mock-token'
+        access_token: 'mock-token',
       }
 
       const mockProfile = {
         id: 'instructor-123',
         email: 'instructor@test.com',
         role: 'instructor',
-        full_name: 'Test Instructor'
+        full_name: 'Test Instructor',
       }
 
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: mockSession },
-        error: null
+        error: null,
       })
-
       ;(supabase.from as jest.Mock).mockReturnValue({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             single: jest.fn().mockResolvedValue({
               data: mockProfile,
-              error: null
-            })
-          })
-        })
+              error: null,
+            }),
+          }),
+        }),
       })
 
       // Test that instructor gets correct navigation
@@ -90,13 +89,7 @@ describe('Instructor Flow Integration Tests', () => {
     })
 
     it('should show instructor-specific tabs', async () => {
-      const instructorTabs = [
-        'Home',
-        'Students', 
-        'Exercises',
-        'Notifications',
-        'Profile'
-      ]
+      const instructorTabs = ['Home', 'Students', 'Exercises', 'Notifications', 'Profile']
 
       // Verify instructor tabs are available
       instructorTabs.forEach(tab => {
@@ -105,10 +98,7 @@ describe('Instructor Flow Integration Tests', () => {
     })
 
     it('should prevent access to student-only features', async () => {
-      const studentOnlyFeatures = [
-        'Workouts',
-        'Student Dashboard'
-      ]
+      const studentOnlyFeatures = ['Workouts', 'Student Dashboard']
 
       // Verify student features are not accessible to instructors
       studentOnlyFeatures.forEach(feature => {
@@ -123,14 +113,14 @@ describe('Instructor Flow Integration Tests', () => {
         user: {
           id: 'instructor-123',
           email: 'instructor@test.com',
-          role: 'instructor'
-        }
+          role: 'instructor',
+        },
       }
 
       // Mock instructor session
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: mockInstructorSession },
-        error: null
+        error: null,
       })
 
       // Verify instructor can access instructor features
@@ -142,13 +132,13 @@ describe('Instructor Flow Integration Tests', () => {
         user: {
           id: 'unknown-123',
           email: 'unknown@test.com',
-          role: 'unknown'
-        }
+          role: 'unknown',
+        },
       }
 
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: mockUnknownRoleSession },
-        error: null
+        error: null,
       })
 
       // Verify unknown role handling

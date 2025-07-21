@@ -1,2 +1,2 @@
-import InstructorProfileScreen from "@/screens/instructor/InstructorProfileScreen"
+import InstructorProfileScreen from '@/screens/instructor/InstructorProfileScreen'
 export default InstructorProfileScreen

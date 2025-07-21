@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "instructor" | "student"
+export type UserRole = 'admin' | 'instructor' | 'student'
 
 export interface User {
   id: string
@@ -119,7 +119,7 @@ export enum WorkoutCreationStep {
   BASIC_INFO = 'basic_info',
   EXERCISE_SELECTION = 'exercise_selection',
   EXERCISE_CONFIGURATION = 'exercise_configuration',
-  PREVIEW = 'preview'
+  PREVIEW = 'preview',
 }
 
 // Error handling types
@@ -127,7 +127,7 @@ export enum WorkoutErrorType {
   VALIDATION_ERROR = 'validation_error',
   NETWORK_ERROR = 'network_error',
   PERMISSION_ERROR = 'permission_error',
-  NOT_FOUND_ERROR = 'not_found_error'
+  NOT_FOUND_ERROR = 'not_found_error',
 }
 
 export interface WorkoutValidationError {
@@ -151,10 +151,10 @@ export interface WorkoutNotFoundError {
   message: string
 }
 
-export type WorkoutError = 
-  | WorkoutValidationError 
-  | WorkoutNetworkError 
-  | WorkoutPermissionError 
+export type WorkoutError =
+  | WorkoutValidationError
+  | WorkoutNetworkError
+  | WorkoutPermissionError
   | WorkoutNotFoundError
 
 // Component prop types
@@ -220,11 +220,14 @@ export interface WorkoutFormValidation {
   name: boolean
   studentId: boolean
   exercises: boolean
-  exerciseConfigs: Record<string, {
-    sets: boolean
-    reps: boolean
-    restSeconds: boolean
-  }>
+  exerciseConfigs: Record<
+    string,
+    {
+      sets: boolean
+      reps: boolean
+      restSeconds: boolean
+    }
+  >
 }
 
 export interface Database {
@@ -232,28 +235,28 @@ export interface Database {
     Tables: {
       profiles: {
         Row: Profile
-        Insert: Omit<Profile, "created_at" | "updated_at">
-        Update: Partial<Omit<Profile, "id" | "created_at" | "updated_at">>
+        Insert: Omit<Profile, 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>
       }
       exercises: {
         Row: Exercise
-        Insert: Omit<Exercise, "id" | "created_at">
-        Update: Partial<Omit<Exercise, "id" | "created_at">>
+        Insert: Omit<Exercise, 'id' | 'created_at'>
+        Update: Partial<Omit<Exercise, 'id' | 'created_at'>>
       }
       workouts: {
         Row: Workout
-        Insert: Omit<Workout, "id" | "created_at" | "updated_at">
-        Update: Partial<Omit<Workout, "id" | "created_at" | "updated_at">>
+        Insert: Omit<Workout, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Workout, 'id' | 'created_at' | 'updated_at'>>
       }
       workout_exercises: {
         Row: WorkoutExercise
-        Insert: Omit<WorkoutExercise, "id">
-        Update: Partial<Omit<WorkoutExercise, "id">>
+        Insert: Omit<WorkoutExercise, 'id'>
+        Update: Partial<Omit<WorkoutExercise, 'id'>>
       }
       workout_logs: {
         Row: WorkoutLog
-        Insert: Omit<WorkoutLog, "id">
-        Update: Partial<Omit<WorkoutLog, "id">>
+        Insert: Omit<WorkoutLog, 'id'>
+        Update: Partial<Omit<WorkoutLog, 'id'>>
       }
     }
   }

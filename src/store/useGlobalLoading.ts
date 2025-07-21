@@ -1,4 +1,4 @@
-import { create } from "zustand"
+import { create } from 'zustand'
 
 interface GlobalLoadingState {
   isLoading: boolean
@@ -7,9 +7,9 @@ interface GlobalLoadingState {
   hideLoading: () => void
 }
 
-export const useGlobalLoading = create<GlobalLoadingState>((set) => ({
+export const useGlobalLoading = create<GlobalLoadingState>(set => ({
   isLoading: false,
   message: undefined,
-  showLoading: (message) => set({ isLoading: true, message }),
+  showLoading: message => set({ isLoading: true, message }),
   hideLoading: () => set({ isLoading: false, message: undefined }),
 }))

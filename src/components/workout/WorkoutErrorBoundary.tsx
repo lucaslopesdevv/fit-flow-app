@@ -85,12 +85,14 @@ export class WorkoutErrorBoundary extends React.Component<
 
   canRetry = (): boolean => {
     const { error } = this.state
-    
+
     if (error instanceof WorkoutError) {
       // Don't show retry for validation errors or permission errors
-      return ![WorkoutErrorType.VALIDATION_ERROR, WorkoutErrorType.PERMISSION_ERROR].includes(error.type)
+      return ![WorkoutErrorType.VALIDATION_ERROR, WorkoutErrorType.PERMISSION_ERROR].includes(
+        error.type
+      )
     }
-    
+
     return true
   }
 
@@ -101,14 +103,12 @@ export class WorkoutErrorBoundary extends React.Component<
           <View style={styles.iconContainer}>
             <ThemedText style={styles.icon}>⚠️</ThemedText>
           </View>
-          
+
           <ThemedText type="subtitle" style={styles.title}>
             {this.getErrorTitle()}
           </ThemedText>
-          
-          <ThemedText style={styles.message}>
-            {this.getErrorMessage()}
-          </ThemedText>
+
+          <ThemedText style={styles.message}>{this.getErrorMessage()}</ThemedText>
 
           {this.canRetry() && (
             <Button

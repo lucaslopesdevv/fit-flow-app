@@ -1,2 +1,2 @@
-import StudentExercisesScreen from "@/screens/student/StudentExercisesScreen"
+import StudentExercisesScreen from '@/screens/student/StudentExercisesScreen'
 export default StudentExercisesScreen

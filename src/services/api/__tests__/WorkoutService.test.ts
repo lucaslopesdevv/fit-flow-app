@@ -7,26 +7,26 @@ jest.mock('../../supabase/supabase', () => ({
     from: jest.fn(() => ({
       insert: jest.fn(() => ({
         select: jest.fn(() => ({
-          single: jest.fn()
-        }))
+          single: jest.fn(),
+        })),
       })),
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
           single: jest.fn(),
           order: jest.fn(() => ({
-            single: jest.fn()
-          }))
+            single: jest.fn(),
+          })),
         })),
-        single: jest.fn()
+        single: jest.fn(),
       })),
       update: jest.fn(() => ({
-        eq: jest.fn()
+        eq: jest.fn(),
       })),
       delete: jest.fn(() => ({
-        eq: jest.fn()
-      }))
-    }))
-  }
+        eq: jest.fn(),
+      })),
+    })),
+  },
 }))
 
 const mockSupabase = supabase as jest.Mocked<typeof supabase>
@@ -49,9 +49,9 @@ describe('WorkoutService', () => {
           reps: '10-12',
           restSeconds: 60,
           orderIndex: 1,
-          notes: 'Test notes'
-        }
-      ]
+          notes: 'Test notes',
+        },
+      ],
     }
 
     it('should create workout successfully', async () => {
@@ -63,36 +63,40 @@ describe('WorkoutService', () => {
         student_id: 'student-1',
         instructor_id: 'instructor-1',
         created_at: '2025-01-18T10:00:00Z',
-        updated_at: '2025-01-18T10:00:00Z'
+        updated_at: '2025-01-18T10:00:00Z',
       }
 
       // Mock student verification
       mockSupabase.from.mockReturnValueOnce({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({
-              data: { instructor_id: mockInstructorId },
-              error: null
-            }))
-          }))
-        }))
+            single: jest.fn(() =>
+              Promise.resolve({
+                data: { instructor_id: mockInstructorId },
+                error: null,
+              })
+            ),
+          })),
+        })),
       } as any)
 
       // Mock workout insertion
       mockSupabase.from.mockReturnValueOnce({
         insert: jest.fn(() => ({
           select: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({
-              data: mockWorkout,
-              error: null
-            }))
-          }))
-        }))
+            single: jest.fn(() =>
+              Promise.resolve({
+                data: mockWorkout,
+                error: null,
+              })
+            ),
+          })),
+        })),
       } as any)
 
       // Mock workout exercises insertion
       mockSupabase.from.mockReturnValueOnce({
-        insert: jest.fn(() => Promise.resolve({ error: null }))
+        insert: jest.fn(() => Promise.resolve({ error: null })),
       } as any)
 
       // Mock getWorkoutDetails
@@ -113,24 +117,26 @@ describe('WorkoutService', () => {
               name: 'Push Up',
               muscle_group: 'Peito',
               created_by: 'instructor-1',
-              created_at: '2025-01-18T10:00:00Z'
-            }
-          }
-        ]
+              created_at: '2025-01-18T10:00:00Z',
+            },
+          },
+        ],
       }
 
       mockSupabase.from.mockReturnValueOnce({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({
-              data: {
-                ...mockWorkout,
-                exercises: mockWorkoutWithExercises.exercises
-              },
-              error: null
-            }))
-          }))
-        }))
+            single: jest.fn(() =>
+              Promise.resolve({
+                data: {
+                  ...mockWorkout,
+                  exercises: mockWorkoutWithExercises.exercises,
+                },
+                error: null,
+              })
+            ),
+          })),
+        })),
       } as any)
 
       const result = await WorkoutService.createWorkout(mockInstructorId, mockWorkoutData)
@@ -143,54 +149,54 @@ describe('WorkoutService', () => {
     it('should throw validation error for missing name', async () => {
       const invalidData = {
         ...mockWorkoutData,
-        name: ''
+        name: '',
       }
 
-      await expect(
-        WorkoutService.createWorkout(mockInstructorId, invalidData)
-      ).rejects.toThrow(WorkoutError)
+      await expect(WorkoutService.createWorkout(mockInstructorId, invalidData)).rejects.toThrow(
+        WorkoutError
+      )
 
       await expect(
         WorkoutService.createWorkout(mockInstructorId, invalidData)
       ).rejects.toMatchObject({
         type: WorkoutErrorType.VALIDATION_ERROR,
-        field: 'name'
+        field: 'name',
       })
     })
 
     it('should throw validation error for missing student', async () => {
       const invalidData = {
         ...mockWorkoutData,
-        studentId: ''
+        studentId: '',
       }
 
-      await expect(
-        WorkoutService.createWorkout(mockInstructorId, invalidData)
-      ).rejects.toThrow(WorkoutError)
+      await expect(WorkoutService.createWorkout(mockInstructorId, invalidData)).rejects.toThrow(
+        WorkoutError
+      )
 
       await expect(
         WorkoutService.createWorkout(mockInstructorId, invalidData)
       ).rejects.toMatchObject({
         type: WorkoutErrorType.VALIDATION_ERROR,
-        field: 'studentId'
+        field: 'studentId',
       })
     })
 
     it('should throw validation error for empty exercises', async () => {
       const invalidData = {
         ...mockWorkoutData,
-        exercises: []
+        exercises: [],
       }
 
-      await expect(
-        WorkoutService.createWorkout(mockInstructorId, invalidData)
-      ).rejects.toThrow(WorkoutError)
+      await expect(WorkoutService.createWorkout(mockInstructorId, invalidData)).rejects.toThrow(
+        WorkoutError
+      )
 
       await expect(
         WorkoutService.createWorkout(mockInstructorId, invalidData)
       ).rejects.toMatchObject({
         type: WorkoutErrorType.VALIDATION_ERROR,
-        field: 'exercises'
+        field: 'exercises',
       })
     })
 
@@ -200,20 +206,20 @@ describe('WorkoutService', () => {
         exercises: [
           {
             ...mockWorkoutData.exercises[0],
-            sets: 0
-          }
-        ]
+            sets: 0,
+          },
+        ],
       }
 
-      await expect(
-        WorkoutService.createWorkout(mockInstructorId, invalidData)
-      ).rejects.toThrow(WorkoutError)
+      await expect(WorkoutService.createWorkout(mockInstructorId, invalidData)).rejects.toThrow(
+        WorkoutError
+      )
 
       await expect(
         WorkoutService.createWorkout(mockInstructorId, invalidData)
       ).rejects.toMatchObject({
         type: WorkoutErrorType.VALIDATION_ERROR,
-        field: 'exercises.0.sets'
+        field: 'exercises.0.sets',
       })
     })
 
@@ -222,22 +228,24 @@ describe('WorkoutService', () => {
       mockSupabase.from.mockReturnValueOnce({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({
-              data: { instructor_id: 'other-instructor' },
-              error: null
-            }))
-          }))
-        }))
+            single: jest.fn(() =>
+              Promise.resolve({
+                data: { instructor_id: 'other-instructor' },
+                error: null,
+              })
+            ),
+          })),
+        })),
       } as any)
 
-      await expect(
-        WorkoutService.createWorkout(mockInstructorId, mockWorkoutData)
-      ).rejects.toThrow(WorkoutError)
+      await expect(WorkoutService.createWorkout(mockInstructorId, mockWorkoutData)).rejects.toThrow(
+        WorkoutError
+      )
 
       await expect(
         WorkoutService.createWorkout(mockInstructorId, mockWorkoutData)
       ).rejects.toMatchObject({
-        type: WorkoutErrorType.PERMISSION_ERROR
+        type: WorkoutErrorType.PERMISSION_ERROR,
       })
     })
   })
@@ -254,21 +262,23 @@ describe('WorkoutService', () => {
           student: {
             id: 'student-1',
             full_name: 'Student Name',
-            email: 'student@test.com'
+            email: 'student@test.com',
           },
-          exercises: []
-        }
+          exercises: [],
+        },
       ]
 
       mockSupabase.from.mockReturnValueOnce({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
-            order: jest.fn(() => Promise.resolve({
-              data: mockWorkouts,
-              error: null
-            }))
-          }))
-        }))
+            order: jest.fn(() =>
+              Promise.resolve({
+                data: mockWorkouts,
+                error: null,
+              })
+            ),
+          })),
+        })),
       } as any)
 
       const result = await WorkoutService.getInstructorWorkouts('instructor-1')
@@ -281,22 +291,22 @@ describe('WorkoutService', () => {
       mockSupabase.from.mockReturnValueOnce({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
-            order: jest.fn(() => Promise.resolve({
-              data: null,
-              error: { message: 'Network error' }
-            }))
-          }))
-        }))
+            order: jest.fn(() =>
+              Promise.resolve({
+                data: null,
+                error: { message: 'Network error' },
+              })
+            ),
+          })),
+        })),
       } as any)
 
-      await expect(
-        WorkoutService.getInstructorWorkouts('instructor-1')
-      ).rejects.toThrow(WorkoutError)
+      await expect(WorkoutService.getInstructorWorkouts('instructor-1')).rejects.toThrow(
+        WorkoutError
+      )
 
-      await expect(
-        WorkoutService.getInstructorWorkouts('instructor-1')
-      ).rejects.toMatchObject({
-        type: WorkoutErrorType.NETWORK_ERROR
+      await expect(WorkoutService.getInstructorWorkouts('instructor-1')).rejects.toMatchObject({
+        type: WorkoutErrorType.NETWORK_ERROR,
       })
     })
   })
@@ -313,21 +323,23 @@ describe('WorkoutService', () => {
           instructor: {
             id: 'instructor-1',
             full_name: 'Instructor Name',
-            email: 'instructor@test.com'
+            email: 'instructor@test.com',
           },
-          exercises: []
-        }
+          exercises: [],
+        },
       ]
 
       mockSupabase.from.mockReturnValueOnce({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
-            order: jest.fn(() => Promise.resolve({
-              data: mockWorkouts,
-              error: null
-            }))
-          }))
-        }))
+            order: jest.fn(() =>
+              Promise.resolve({
+                data: mockWorkouts,
+                error: null,
+              })
+            ),
+          })),
+        })),
       } as any)
 
       const result = await WorkoutService.getStudentWorkouts('student-1')
@@ -353,20 +365,22 @@ describe('WorkoutService', () => {
             order_index: 1,
             sets: 3,
             reps: '10-12',
-            exercise: { id: 'ex-1', name: 'Push Up' }
-          }
-        ]
+            exercise: { id: 'ex-1', name: 'Push Up' },
+          },
+        ],
       }
 
       mockSupabase.from.mockReturnValueOnce({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({
-              data: mockWorkout,
-              error: null
-            }))
-          }))
-        }))
+            single: jest.fn(() =>
+              Promise.resolve({
+                data: mockWorkout,
+                error: null,
+              })
+            ),
+          })),
+        })),
       } as any)
 
       const result = await WorkoutService.getWorkoutDetails('workout-1')
@@ -379,22 +393,20 @@ describe('WorkoutService', () => {
       mockSupabase.from.mockReturnValueOnce({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({
-              data: null,
-              error: { code: 'PGRST116' }
-            }))
-          }))
-        }))
+            single: jest.fn(() =>
+              Promise.resolve({
+                data: null,
+                error: { code: 'PGRST116' },
+              })
+            ),
+          })),
+        })),
       } as any)
 
-      await expect(
-        WorkoutService.getWorkoutDetails('non-existent')
-      ).rejects.toThrow(WorkoutError)
+      await expect(WorkoutService.getWorkoutDetails('non-existent')).rejects.toThrow(WorkoutError)
 
-      await expect(
-        WorkoutService.getWorkoutDetails('non-existent')
-      ).rejects.toMatchObject({
-        type: WorkoutErrorType.NOT_FOUND_ERROR
+      await expect(WorkoutService.getWorkoutDetails('non-existent')).rejects.toMatchObject({
+        type: WorkoutErrorType.NOT_FOUND_ERROR,
       })
     })
   })
@@ -405,31 +417,31 @@ describe('WorkoutService', () => {
       mockSupabase.from.mockReturnValueOnce({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({
-              data: { instructor_id: 'instructor-1' },
-              error: null
-            }))
-          }))
-        }))
+            single: jest.fn(() =>
+              Promise.resolve({
+                data: { instructor_id: 'instructor-1' },
+                error: null,
+              })
+            ),
+          })),
+        })),
       } as any)
 
       // Mock exercises deletion
       mockSupabase.from.mockReturnValueOnce({
         delete: jest.fn(() => ({
-          eq: jest.fn(() => Promise.resolve({ error: null }))
-        }))
+          eq: jest.fn(() => Promise.resolve({ error: null })),
+        })),
       } as any)
 
       // Mock workout deletion
       mockSupabase.from.mockReturnValueOnce({
         delete: jest.fn(() => ({
-          eq: jest.fn(() => Promise.resolve({ error: null }))
-        }))
+          eq: jest.fn(() => Promise.resolve({ error: null })),
+        })),
       } as any)
 
-      await expect(
-        WorkoutService.deleteWorkout('workout-1', 'instructor-1')
-      ).resolves.not.toThrow()
+      await expect(WorkoutService.deleteWorkout('workout-1', 'instructor-1')).resolves.not.toThrow()
     })
 
     it('should throw permission error for non-owner', async () => {
@@ -437,23 +449,25 @@ describe('WorkoutService', () => {
       mockSupabase.from.mockReturnValueOnce({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
-            single: jest.fn(() => Promise.resolve({
-              data: { instructor_id: 'other-instructor' },
-              error: null
-            }))
-          }))
-        }))
+            single: jest.fn(() =>
+              Promise.resolve({
+                data: { instructor_id: 'other-instructor' },
+                error: null,
+              })
+            ),
+          })),
+        })),
       } as any)
 
-      await expect(
-        WorkoutService.deleteWorkout('workout-1', 'instructor-1')
-      ).rejects.toThrow(WorkoutError)
+      await expect(WorkoutService.deleteWorkout('workout-1', 'instructor-1')).rejects.toThrow(
+        WorkoutError
+      )
 
-      await expect(
-        WorkoutService.deleteWorkout('workout-1', 'instructor-1')
-      ).rejects.toMatchObject({
-        type: WorkoutErrorType.PERMISSION_ERROR
-      })
+      await expect(WorkoutService.deleteWorkout('workout-1', 'instructor-1')).rejects.toMatchObject(
+        {
+          type: WorkoutErrorType.PERMISSION_ERROR,
+        }
+      )
     })
   })
 })

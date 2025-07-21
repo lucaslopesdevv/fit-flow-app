@@ -1,149 +1,139 @@
-import React, { useEffect, useState, useCallback } from "react";
-import {
-  View,
-  FlatList,
-  StyleSheet,
-  Alert,
-  RefreshControl,
-} from "react-native";
-import { Card } from "@/components/common/Card";
-import { Button } from "@/components/common/Button";
-import { ThemedText } from "@/components/ThemedText";
-import { Loading } from "@/components/common/Loading";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/services/supabase/supabase";
-import CreateWorkoutModal from "@/components/modals/CreateWorkoutModal";
-import WorkoutManagementModal from "@/components/modals/WorkoutManagementModal";
-import { WorkoutService } from "@/services/api/WorkoutService";
-import { Profile, WorkoutWithExercises } from "@/types/database";
+import React, { useEffect, useState, useCallback } from 'react'
+import { View, FlatList, StyleSheet, Alert, RefreshControl } from 'react-native'
+import { Card } from '@/components/common/Card'
+import { Button } from '@/components/common/Button'
+import { ThemedText } from '@/components/ThemedText'
+import { Loading } from '@/components/common/Loading'
+import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/services/supabase/supabase'
+import CreateWorkoutModal from '@/components/modals/CreateWorkoutModal'
+import WorkoutManagementModal from '@/components/modals/WorkoutManagementModal'
+import { WorkoutService } from '@/services/api/WorkoutService'
+import { Profile, WorkoutWithExercises } from '@/types/database'
 
 interface Student {
-  id: string;
-  full_name: string;
-  email: string;
+  id: string
+  full_name: string
+  email: string
 }
 
 export default function InstructorHomeScreen() {
-  const { user } = useAuth();
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [kpis, setKpis] = useState({ students: 0, workouts: 0, executions: 0 });
+  const { user } = useAuth()
+  const [students, setStudents] = useState<Student[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [kpis, setKpis] = useState({ students: 0, workouts: 0, executions: 0 })
 
   // Workout modal states
-  const [showCreateWorkoutModal, setShowCreateWorkoutModal] = useState(false);
-  const [showWorkoutManagement, setShowWorkoutManagement] = useState(false);
-  const [instructorStudents, setInstructorStudents] = useState<Profile[]>([]);
-  const [recentWorkouts, setRecentWorkouts] = useState<WorkoutWithExercises[]>(
-    []
-  );
-  const [workoutsLoading, setWorkoutsLoading] = useState(false);
+  const [showCreateWorkoutModal, setShowCreateWorkoutModal] = useState(false)
+  const [showWorkoutManagement, setShowWorkoutManagement] = useState(false)
+  const [instructorStudents, setInstructorStudents] = useState<Profile[]>([])
+  const [recentWorkouts, setRecentWorkouts] = useState<WorkoutWithExercises[]>([])
+  const [workoutsLoading, setWorkoutsLoading] = useState(false)
 
   const fetchDashboard = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) return
 
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
     try {
       // Buscar alunos
       const { data: studentsData, error: studentsError } = await supabase
-        .from("profiles")
+        .from('profiles')
         .select(
-          "id, full_name, email, phone, avatar_url, instructor_id, role, created_at, updated_at, is_active"
+          'id, full_name, email, phone, avatar_url, instructor_id, role, created_at, updated_at, is_active'
         )
-        .eq("instructor_id", user.id);
-      if (studentsError) throw studentsError;
+        .eq('instructor_id', user.id)
+      if (studentsError) throw studentsError
 
-      const students = studentsData || [];
-      setStudents(students);
-      setInstructorStudents(students);
+      const students = studentsData || []
+      setStudents(students)
+      setInstructorStudents(students)
 
       // Buscar KPIs
       const { count: workoutsCount } = await supabase
-        .from("workouts")
-        .select("id", { count: "exact", head: true })
-        .eq("instructor_id", user.id);
+        .from('workouts')
+        .select('id', { count: 'exact', head: true })
+        .eq('instructor_id', user.id)
       const { count: executionsCount } = await supabase
-        .from("workout_logs")
-        .select("id", { count: "exact", head: true })
+        .from('workout_logs')
+        .select('id', { count: 'exact', head: true })
         .in(
-          "student_id",
+          'student_id',
           students.map((s: Student) => s.id)
-        );
+        )
       setKpis({
         students: students.length,
         workouts: workoutsCount || 0,
         executions: executionsCount || 0,
-      });
+      })
     } catch (e: any) {
-      setError(e.message || String(e));
+      setError(e.message || String(e))
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [user?.id]);
+  }, [user?.id])
 
   const fetchRecentWorkouts = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) return
 
-    setWorkoutsLoading(true);
+    setWorkoutsLoading(true)
     try {
-      const workouts = await WorkoutService.getInstructorWorkouts(user.id);
+      const workouts = await WorkoutService.getInstructorWorkouts(user.id)
       // Get only the 5 most recent workouts
-      setRecentWorkouts(workouts.slice(0, 5));
+      setRecentWorkouts(workouts.slice(0, 5))
     } catch (error) {
-      console.error("Error fetching recent workouts:", error);
+      console.error('Error fetching recent workouts:', error)
     } finally {
-      setWorkoutsLoading(false);
+      setWorkoutsLoading(false)
     }
-  }, [user?.id]);
+  }, [user?.id])
 
   const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await Promise.all([fetchDashboard(), fetchRecentWorkouts()]);
-    setRefreshing(false);
-  }, [fetchDashboard, fetchRecentWorkouts]);
+    setRefreshing(true)
+    await Promise.all([fetchDashboard(), fetchRecentWorkouts()])
+    setRefreshing(false)
+  }, [fetchDashboard, fetchRecentWorkouts])
 
   useEffect(() => {
-    fetchDashboard();
-    fetchRecentWorkouts();
-  }, [fetchDashboard, fetchRecentWorkouts]);
+    fetchDashboard()
+    fetchRecentWorkouts()
+  }, [fetchDashboard, fetchRecentWorkouts])
 
   const handleCreateWorkout = () => {
     if (instructorStudents.length === 0) {
       Alert.alert(
-        "Nenhum aluno encontrado",
-        "Você precisa ter alunos cadastrados para criar treinos. Cadastre alunos primeiro.",
-        [{ text: "OK" }]
-      );
-      return;
+        'Nenhum aluno encontrado',
+        'Você precisa ter alunos cadastrados para criar treinos. Cadastre alunos primeiro.',
+        [{ text: 'OK' }]
+      )
+      return
     }
-    setShowCreateWorkoutModal(true);
-  };
+    setShowCreateWorkoutModal(true)
+  }
 
   const handleWorkoutCreated = (workout: WorkoutWithExercises) => {
     // Refresh the dashboard data
-    fetchDashboard();
-    fetchRecentWorkouts();
+    fetchDashboard()
+    fetchRecentWorkouts()
 
     Alert.alert(
-      "Treino criado com sucesso!",
+      'Treino criado com sucesso!',
       `O treino "${workout.name}" foi criado para ${workout.student?.full_name}.`,
-      [{ text: "OK" }]
-    );
-  };
+      [{ text: 'OK' }]
+    )
+  }
 
   const handleWorkoutPress = (workout: WorkoutWithExercises) => {
     Alert.alert(
       workout.name,
       `Aluno: ${workout.student?.full_name}\nExercícios: ${
         workout.exercises.length
-      }\nCriado em: ${new Date(workout.created_at).toLocaleDateString(
-        "pt-BR"
-      )}`,
-      [{ text: "OK" }]
-    );
-  };
+      }\nCriado em: ${new Date(workout.created_at).toLocaleDateString('pt-BR')}`,
+      [{ text: 'OK' }]
+    )
+  }
 
   return (
     <View style={styles.container}>
@@ -154,9 +144,7 @@ export default function InstructorHomeScreen() {
           <>
             {error && (
               <Card style={styles.errorCard}>
-                <ThemedText style={{ color: "#b91c1c", textAlign: "center" }}>
-                  {error}
-                </ThemedText>
+                <ThemedText style={{ color: '#b91c1c', textAlign: 'center' }}>{error}</ThemedText>
                 <Button
                   title="Tentar Novamente"
                   onPress={fetchDashboard}
@@ -183,9 +171,7 @@ export default function InstructorHomeScreen() {
                 <ThemedText style={styles.kpiLabel} numberOfLines={1}>
                   Exec.
                 </ThemedText>
-                <ThemedText style={styles.kpiValue}>
-                  {kpis.executions}
-                </ThemedText>
+                <ThemedText style={styles.kpiValue}>{kpis.executions}</ThemedText>
               </Card>
             </View>
 
@@ -193,12 +179,7 @@ export default function InstructorHomeScreen() {
             <View style={styles.actionRow}>
               <Button
                 title="Adicionar Aluno"
-                onPress={() =>
-                  Alert.alert(
-                    "Adicionar Aluno",
-                    "Funcionalidade em desenvolvimento"
-                  )
-                }
+                onPress={() => Alert.alert('Adicionar Aluno', 'Funcionalidade em desenvolvimento')}
                 style={styles.actionButton}
                 variant="outlined"
               />
@@ -239,22 +220,18 @@ export default function InstructorHomeScreen() {
             {workoutsLoading ? (
               <Card style={styles.loadingCard}>
                 <Loading />
-                <ThemedText style={styles.loadingText}>
-                  Carregando treinos...
-                </ThemedText>
+                <ThemedText style={styles.loadingText}>Carregando treinos...</ThemedText>
               </Card>
             ) : recentWorkouts.length === 0 ? (
               <Card style={styles.emptyCard}>
-                <ThemedText style={styles.emptyText}>
-                  Nenhum treino criado ainda.
-                </ThemedText>
+                <ThemedText style={styles.emptyText}>Nenhum treino criado ainda.</ThemedText>
                 <ThemedText style={styles.emptySubtext}>
                   Crie seu primeiro treino para começar!
                 </ThemedText>
               </Card>
             ) : (
               <View style={styles.workoutsList}>
-                {recentWorkouts.map((workout) => (
+                {recentWorkouts.map(workout => (
                   <Card
                     key={workout.id}
                     style={styles.workoutCard}
@@ -265,9 +242,7 @@ export default function InstructorHomeScreen() {
                         {workout.name}
                       </ThemedText>
                       <ThemedText style={styles.workoutDate}>
-                        {new Date(workout.created_at).toLocaleDateString(
-                          "pt-BR"
-                        )}
+                        {new Date(workout.created_at).toLocaleDateString('pt-BR')}
                       </ThemedText>
                     </View>
                     <ThemedText style={styles.workoutStudent}>
@@ -275,7 +250,7 @@ export default function InstructorHomeScreen() {
                     </ThemedText>
                     <ThemedText style={styles.workoutExercises}>
                       {workout.exercises.length} exercício
-                      {workout.exercises.length !== 1 ? "s" : ""}
+                      {workout.exercises.length !== 1 ? 's' : ''}
                     </ThemedText>
                   </Card>
                 ))}
@@ -290,27 +265,21 @@ export default function InstructorHomeScreen() {
             {loading ? (
               <Card style={styles.loadingCard}>
                 <Loading />
-                <ThemedText style={styles.loadingText}>
-                  Carregando alunos...
-                </ThemedText>
+                <ThemedText style={styles.loadingText}>Carregando alunos...</ThemedText>
               </Card>
             ) : students.length === 0 ? (
               <Card style={styles.emptyCard}>
-                <ThemedText style={styles.emptyText}>
-                  Nenhum aluno encontrado.
-                </ThemedText>
+                <ThemedText style={styles.emptyText}>Nenhum aluno encontrado.</ThemedText>
                 <ThemedText style={styles.emptySubtext}>
                   Cadastre alunos para começar a criar treinos.
                 </ThemedText>
               </Card>
             ) : (
               <View style={styles.studentsList}>
-                {students.map((student) => (
+                {students.map(student => (
                   <Card key={student.id} style={styles.studentCard}>
                     <ThemedText type="subtitle">{student.full_name}</ThemedText>
-                    <ThemedText style={styles.studentEmail}>
-                      {student.email}
-                    </ThemedText>
+                    <ThemedText style={styles.studentEmail}>{student.email}</ThemedText>
                   </Card>
                 ))}
               </View>
@@ -321,7 +290,7 @@ export default function InstructorHomeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={["#2563eb"]}
+            colors={['#2563eb']}
             tintColor="#2563eb"
           />
         }
@@ -348,13 +317,13 @@ export default function InstructorHomeScreen() {
         }}
       />
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fafafa",
+    backgroundColor: '#fafafa',
   },
   scrollContent: {
     padding: 16,
@@ -362,44 +331,44 @@ const styles = StyleSheet.create({
   },
   errorCard: {
     marginBottom: 16,
-    backgroundColor: "#fee2e2",
+    backgroundColor: '#fee2e2',
     padding: 16,
   },
   kpiRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: 16,
     gap: 10,
   },
   kpiCard: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 8,
-    backgroundColor: "#ffffff",
+    backgroundColor: '#ffffff',
     borderRadius: 8,
     minHeight: 75,
     borderWidth: 1,
-    borderColor: "#e9ecef",
+    borderColor: '#e9ecef',
     marginVertical: 0,
     margin: 0,
   },
   kpiLabel: {
     fontSize: 16,
-    fontWeight: "500",
-    color: "#6c757d",
+    fontWeight: '500',
+    color: '#6c757d',
     marginBottom: 4,
-    textAlign: "center",
+    textAlign: 'center',
   },
   kpiValue: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#212529",
-    textAlign: "center",
+    fontWeight: '700',
+    color: '#212529',
+    textAlign: 'center',
   },
   actionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 24,
     gap: 12,
   },
@@ -413,15 +382,15 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: 8,
     marginBottom: 12,
   },
   sectionActions: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
   seeAllButton: {
@@ -430,27 +399,27 @@ const styles = StyleSheet.create({
   },
   loadingCard: {
     padding: 24,
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 16,
   },
   loadingText: {
     marginTop: 12,
-    color: "#6c757d",
+    color: '#6c757d',
   },
   emptyCard: {
     padding: 24,
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 16,
   },
   emptyText: {
     fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
+    fontWeight: '600',
+    textAlign: 'center',
     marginBottom: 8,
   },
   emptySubtext: {
-    color: "#6c757d",
-    textAlign: "center",
+    color: '#6c757d',
+    textAlign: 'center',
   },
   workoutsList: {
     marginBottom: 24,
@@ -460,24 +429,24 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   workoutHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 8,
   },
   workoutDate: {
     fontSize: 12,
-    color: "#6c757d",
+    color: '#6c757d',
     marginLeft: 8,
   },
   workoutStudent: {
-    color: "#2563eb",
-    fontWeight: "600",
+    color: '#2563eb',
+    fontWeight: '600',
     marginBottom: 4,
   },
   workoutExercises: {
     fontSize: 12,
-    color: "#6c757d",
+    color: '#6c757d',
   },
   studentsList: {
     marginBottom: 16,
@@ -488,7 +457,7 @@ const styles = StyleSheet.create({
   },
   studentEmail: {
     fontSize: 12,
-    color: "#6c757d",
+    color: '#6c757d',
     marginTop: 4,
   },
-});
+})

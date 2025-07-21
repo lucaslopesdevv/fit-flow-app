@@ -20,17 +20,17 @@ describe('Complete Flow Validation Tests', () => {
         user: {
           id: 'instructor-123',
           email: 'instructor@test.com',
-          role: 'instructor'
+          role: 'instructor',
         },
         loading: false,
-        error: null
+        error: null,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockInstructorAuth)
 
       // Verify instructor gets correct role-based navigation
       expect(mockInstructorAuth.user?.role).toBe('instructor')
-      
+
       // Instructor should have access to these tabs
       const instructorTabs = ['Home', 'Students', 'Exercises', 'Notifications', 'Profile']
       instructorTabs.forEach(tab => {
@@ -43,17 +43,17 @@ describe('Complete Flow Validation Tests', () => {
         user: {
           id: 'student-123',
           email: 'student@test.com',
-          role: 'student'
+          role: 'student',
         },
         loading: false,
-        error: null
+        error: null,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockStudentAuth)
 
       // Verify student gets correct role-based navigation
       expect(mockStudentAuth.user?.role).toBe('student')
-      
+
       // Student should have access to these tabs
       const studentTabs = ['Home', 'Workouts', 'Exercises', 'Notifications', 'Profile']
       studentTabs.forEach(tab => {
@@ -66,13 +66,13 @@ describe('Complete Flow Validation Tests', () => {
     it('should complete end-to-end student invitation flow', async () => {
       // Mock authenticated instructor
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
-        data: { 
-          session: { 
+        data: {
+          session: {
             user: { id: 'instructor-123', email: 'instructor@test.com' },
-            access_token: 'mock-token'
-          } 
+            access_token: 'mock-token',
+          },
         },
-        error: null
+        error: null,
       })
 
       // Mock successful invitation
@@ -82,14 +82,14 @@ describe('Complete Flow Validation Tests', () => {
           email: 'newstudent@test.com',
           full_name: 'New Student',
           phone: '123456789',
-          instructor_id: 'instructor-123'
-        }
+          instructor_id: 'instructor-123',
+        },
       })
 
       const invitationData = {
         email: 'newstudent@test.com',
         full_name: 'New Student',
-        phone: '123456789'
+        phone: '123456789',
       }
 
       const result = await StudentService.inviteStudent(invitationData)
@@ -105,21 +105,20 @@ describe('Complete Flow Validation Tests', () => {
       // Mock edge function call for email sending
       ;(supabase.functions.invoke as jest.Mock).mockResolvedValue({
         data: { success: true, message: 'Invitation sent' },
-        error: null
+        error: null,
       })
-
       ;(StudentService.inviteStudent as jest.Mock).mockResolvedValue({
         success: true,
         invitation_data: {
           email: 'student@test.com',
           full_name: 'Test Student',
-          instructor_id: 'instructor-123'
-        }
+          instructor_id: 'instructor-123',
+        },
       })
 
       const result = await StudentService.inviteStudent({
         email: 'student@test.com',
-        full_name: 'Test Student'
+        full_name: 'Test Student',
       })
 
       expect(result.success).toBe(true)
@@ -135,7 +134,7 @@ describe('Complete Flow Validation Tests', () => {
         instructor_id: 'instructor-123',
         is_active: true,
         created_at: '2023-01-01T00:00:00Z',
-        updated_at: '2023-01-01T00:00:00Z'
+        updated_at: '2023-01-01T00:00:00Z',
       }
 
       ;(StudentService.getStudentProfile as jest.Mock).mockResolvedValue(mockStudentProfile)
@@ -160,7 +159,7 @@ describe('Complete Flow Validation Tests', () => {
           created_at: '2023-01-01T00:00:00Z',
           updated_at: '2023-01-01T00:00:00Z',
           role: 'student' as const,
-          instructor_id: 'instructor-123'
+          instructor_id: 'instructor-123',
         },
         {
           id: 'student-2',
@@ -171,8 +170,8 @@ describe('Complete Flow Validation Tests', () => {
           created_at: '2023-01-02T00:00:00Z',
           updated_at: '2023-01-02T00:00:00Z',
           role: 'student' as const,
-          instructor_id: 'instructor-123'
-        }
+          instructor_id: 'instructor-123',
+        },
       ]
 
       ;(StudentService.getInstructorStudents as jest.Mock).mockResolvedValue(mockStudents)
@@ -193,13 +192,13 @@ describe('Complete Flow Validation Tests', () => {
         user: {
           id: 'instructor-123',
           email: 'instructor@test.com',
-          role: 'instructor'
-        }
+          role: 'instructor',
+        },
       }
 
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: mockInstructorSession },
-        error: null
+        error: null,
       })
 
       expect(mockInstructorSession.user.role).toBe('instructor')
@@ -209,13 +208,13 @@ describe('Complete Flow Validation Tests', () => {
         user: {
           id: 'student-123',
           email: 'student@test.com',
-          role: 'student'
-        }
+          role: 'student',
+        },
       }
 
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: mockStudentSession },
-        error: null
+        error: null,
       })
 
       expect(mockStudentSession.user.role).toBe('student')
@@ -224,13 +223,13 @@ describe('Complete Flow Validation Tests', () => {
     it('should handle authentication errors', async () => {
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },
-        error: { message: 'Authentication failed' }
+        error: { message: 'Authentication failed' },
       })
 
       const mockErrorAuth = {
         user: null,
         loading: false,
-        error: 'Authentication failed'
+        error: 'Authentication failed',
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockErrorAuth)
@@ -247,10 +246,10 @@ describe('Complete Flow Validation Tests', () => {
         user: {
           id: 'instructor-123',
           email: 'instructor@test.com',
-          role: 'instructor'
+          role: 'instructor',
         },
         loading: false,
-        error: null
+        error: null,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockInstructorAuth)
@@ -264,13 +263,13 @@ describe('Complete Flow Validation Tests', () => {
         invitation_data: {
           email: 'newstudent@test.com',
           full_name: 'New Student',
-          instructor_id: 'instructor-123'
-        }
+          instructor_id: 'instructor-123',
+        },
       })
 
       const inviteResult = await StudentService.inviteStudent({
         email: 'newstudent@test.com',
-        full_name: 'New Student'
+        full_name: 'New Student',
       })
 
       expect(inviteResult.success).toBe(true)
@@ -285,8 +284,8 @@ describe('Complete Flow Validation Tests', () => {
           is_active: true,
           created_at: '2023-01-01T00:00:00Z',
           updated_at: '2023-01-01T00:00:00Z',
-          role: 'student' as const
-        }
+          role: 'student' as const,
+        },
       ]
 
       ;(StudentService.getInstructorStudents as jest.Mock).mockResolvedValue(mockStudents)
@@ -298,11 +297,11 @@ describe('Complete Flow Validation Tests', () => {
       // 5. Manage student
       ;(StudentService.updateStudent as jest.Mock).mockResolvedValue({
         ...mockStudents[0],
-        full_name: 'Updated Student Name'
+        full_name: 'Updated Student Name',
       })
 
       const updateResult = await StudentService.updateStudent('student-new', {
-        full_name: 'Updated Student Name'
+        full_name: 'Updated Student Name',
       })
 
       expect(updateResult.full_name).toBe('Updated Student Name')
@@ -312,7 +311,7 @@ describe('Complete Flow Validation Tests', () => {
       // Requirement 1.1 & 1.2: Role-based navigation ✓
       const instructorAuth = { user: { role: 'instructor' } }
       const studentAuth = { user: { role: 'student' } }
-      
+
       expect(instructorAuth.user.role).toBe('instructor')
       expect(studentAuth.user.role).toBe('student')
 
@@ -320,7 +319,7 @@ describe('Complete Flow Validation Tests', () => {
       ;(StudentService.inviteStudent as jest.Mock).mockResolvedValue({ success: true })
       const inviteResult = await StudentService.inviteStudent({
         email: 'test@test.com',
-        full_name: 'Test Student'
+        full_name: 'Test Student',
       })
       expect(inviteResult.success).toBe(true)
 
@@ -335,7 +334,7 @@ describe('Complete Flow Validation Tests', () => {
       // Requirement 4.1: Authentication flow ✓
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: { user: { role: 'instructor' } } },
-        error: null
+        error: null,
       })
 
       const session = await supabase.auth.getSession()

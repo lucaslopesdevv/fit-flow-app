@@ -6,14 +6,11 @@ export interface TimeoutOptions {
   abortController?: AbortController
 }
 
-export function withTimeout<T>(
-  promise: Promise<T>,
-  options: TimeoutOptions = {}
-): Promise<T> {
+export function withTimeout<T>(promise: Promise<T>, options: TimeoutOptions = {}): Promise<T> {
   const {
     timeout = 30000, // 30 seconds default
     timeoutMessage = 'A operação expirou. Tente novamente.',
-    abortController
+    abortController,
   } = options
 
   return new Promise((resolve, reject) => {
@@ -21,18 +18,15 @@ export function withTimeout<T>(
       if (abortController) {
         abortController.abort()
       }
-      reject(new WorkoutError(
-        WorkoutErrorType.NETWORK_ERROR,
-        timeoutMessage
-      ))
+      reject(new WorkoutError(WorkoutErrorType.NETWORK_ERROR, timeoutMessage))
     }, timeout)
 
     promise
-      .then((result) => {
+      .then(result => {
         clearTimeout(timeoutId)
         resolve(result)
       })
-      .catch((error) => {
+      .catch(error => {
         clearTimeout(timeoutId)
         reject(error)
       })
@@ -43,18 +37,14 @@ export class TimeoutManager {
   private timeouts: Map<string, ReturnType<typeof setTimeout>> = new Map()
   private abortControllers: Map<string, AbortController> = new Map()
 
-  createTimeout(
-    key: string,
-    callback: () => void,
-    delay: number
-  ): void {
+  createTimeout(key: string, callback: () => void, delay: number): void {
     this.clearTimeout(key)
-    
+
     const timeoutId = setTimeout(() => {
       callback()
       this.timeouts.delete(key)
     }, delay)
-    
+
     this.timeouts.set(key, timeoutId)
   }
 
@@ -68,10 +58,10 @@ export class TimeoutManager {
 
   createAbortController(key: string): AbortController {
     this.clearAbortController(key)
-    
+
     const controller = new AbortController()
     this.abortControllers.set(key, controller)
-    
+
     return controller
   }
 
@@ -103,13 +93,13 @@ export class TimeoutManager {
     options: TimeoutOptions = {}
   ): Promise<T> {
     const controller = this.createAbortController(key)
-    
+
     try {
       const result = await withTimeout(promise, {
         ...options,
-        abortController: controller
+        abortController: controller,
       })
-      
+
       this.clearAbortController(key)
       return result
     } catch (error) {

@@ -3,6 +3,7 @@
 ## 📊 Status Atual do Projeto (Janeiro 2025)
 
 ### ✅ Funcionalidades Implementadas e Testadas
+
 - **Sistema de Autenticação**: Login, roles, navegação baseada em papéis
 - **Gestão de Alunos (Instrutor)**: Convite, listagem, edição, gerenciamento completo
 - **Sistema de Exercícios**: Cadastro, listagem, busca, filtros, upload de imagens
@@ -10,11 +11,13 @@
 - **Infraestrutura**: Banco de dados, RLS policies, tipos TypeScript
 
 ### ⚠️ Próximas Prioridades
+
 1. **Criação de Treinos**: Modal/tela para instrutores criarem treinos para alunos
 2. **Visualização de Treinos**: Tela detalhada para alunos visualizarem treinos
 3. **Execução de Treinos**: Player de vídeo, timer, marcação de progresso
 
 ### 📋 Pendente (Fases Futuras)
+
 - Painel Web para Administradores (Fase 5)
 - Features avançadas: offline, push notifications, analytics
 
@@ -52,16 +55,16 @@ Admin (Web) → Instrutor (Mobile) → Aluno (Mobile)
 
 ### 2.2 Gestão de Usuários
 
-- [ ] **Admin**: Cria e gerencia instrutores via web *(Fase 5 - não implementado)*
+- [ ] **Admin**: Cria e gerencia instrutores via web _(Fase 5 - não implementado)_
 - [x] **Instrutor**: Cadastra e gerencia alunos
-- [ ] **Aluno**: Visualiza treinos e executa exercícios *(parcialmente implementado)*
+- [ ] **Aluno**: Visualiza treinos e executa exercícios _(parcialmente implementado)_
 
 ### 2.3 Sistema de Treinos
 
-- [ ] Criação de treinos personalizados *(estrutura pronta, falta UI)*
-- [x] Exercícios com séries, repetições e tempo de descanso *(estrutura no banco)*
-- [x] Vídeos demonstrativos para cada exercício *(upload de imagens implementado)*
-- [ ] Histórico de treinos realizados *(estrutura pronta, falta implementação)*
+- [ ] Criação de treinos personalizados _(estrutura pronta, falta UI)_
+- [x] Exercícios com séries, repetições e tempo de descanso _(estrutura no banco)_
+- [x] Vídeos demonstrativos para cada exercício _(upload de imagens implementado)_
+- [ ] Histórico de treinos realizados _(estrutura pronta, falta implementação)_
 
 ## 3. Estrutura do Banco de Dados
 
@@ -267,7 +270,7 @@ Admin (Web) → Instrutor (Mobile) → Aluno (Mobile)
 - [x] Criar tela de listagem de treinos do aluno
   - [x] Integrar listagem com Supabase (query workouts)
   - [x] Exibir nome, descrição, status e data de criação
-  - [x] Botão para criar novo treino *(placeholder - não funcional)*
+  - [x] Botão para criar novo treino _(placeholder - não funcional)_
 - [ ] **PRÓXIMA PRIORIDADE**: Criar tela/modal de cadastro de novo treino
   - [ ] Formulário: nome, descrição, seleção de exercícios
   - [ ] Selecionar múltiplos exercícios do banco (com busca/filtro)
@@ -284,8 +287,8 @@ Admin (Web) → Instrutor (Mobile) → Aluno (Mobile)
 
 #### Task 3.1: Telas do Aluno ⚠️ **PARCIALMENTE IMPLEMENTADO**
 
-- [x] Dashboard do aluno *(tela básica criada)*
-- [x] Lista de treinos *(listagem básica implementada)*
+- [x] Dashboard do aluno _(tela básica criada)_
+- [x] Lista de treinos _(listagem básica implementada)_
 - [ ] **PENDENTE**: Visualização detalhada do treino
 - [ ] **PENDENTE**: Player de vídeo para exercícios
 - [ ] **PENDENTE**: Timer para descanso

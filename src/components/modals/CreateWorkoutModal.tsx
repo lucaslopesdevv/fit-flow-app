@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from 'react'
 import {
   View,
   Modal,
@@ -7,12 +7,12 @@ import {
   Platform,
   StyleSheet,
   Alert,
-} from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { Input } from "@/components/common/Input";
-import { Button } from "@/components/common/Button";
-import { Card } from "@/components/common/Card";
-import { useAuth } from "@/hooks/useAuth";
+} from 'react-native'
+import { ThemedText } from '@/components/ThemedText'
+import { Input } from '@/components/common/Input'
+import { Button } from '@/components/common/Button'
+import { Card } from '@/components/common/Card'
+import { useAuth } from '@/hooks/useAuth'
 import {
   CreateWorkoutModalProps,
   WorkoutFormState,
@@ -21,21 +21,18 @@ import {
   Profile,
   Exercise,
   WorkoutWithExercises,
-} from "@/types/database";
-import {
-  WorkoutFormWrapper,
-  useWorkoutOperations,
-} from "../workout";
+} from '@/types/database'
+import { WorkoutFormWrapper, useWorkoutOperations } from '../workout'
 
 const INITIAL_FORM_STATE: WorkoutFormState = {
-  name: "",
-  description: "",
-  studentId: "",
+  name: '',
+  description: '',
+  studentId: '',
   selectedExercises: [],
   loading: false,
   error: null,
   currentStep: WorkoutCreationStep.BASIC_INFO,
-};
+}
 
 export default function CreateWorkoutModal({
   visible,
@@ -44,10 +41,9 @@ export default function CreateWorkoutModal({
   instructorStudents,
   editingWorkout = null,
 }: CreateWorkoutModalProps) {
-  const { user } = useAuth();
-  const [formState, setFormState] =
-    useState<WorkoutFormState>(INITIAL_FORM_STATE);
-  const [selectedStudent, setSelectedStudent] = useState<Profile | null>(null);
+  const { user } = useAuth()
+  const [formState, setFormState] = useState<WorkoutFormState>(INITIAL_FORM_STATE)
+  const [selectedStudent, setSelectedStudent] = useState<Profile | null>(null)
 
   const {
     createWorkout,
@@ -60,84 +56,78 @@ export default function CreateWorkoutModal({
     clearError,
   } = useWorkoutOperations({
     persistFormData: true,
-    formStorageKey: "create_workout_form",
-  });
+    formStorageKey: 'create_workout_form',
+  })
 
   const loadPersistedFormData = useCallback(async () => {
     try {
-      const persistedData = await getPersistedFormData();
+      const persistedData = await getPersistedFormData()
       if (persistedData) {
-        setFormState((prev) => ({
+        setFormState(prev => ({
           ...prev,
           ...persistedData,
           loading: false,
           error: null,
-        }));
+        }))
       } else {
-        setFormState(INITIAL_FORM_STATE);
+        setFormState(INITIAL_FORM_STATE)
       }
     } catch (error) {
-      console.warn("Failed to load persisted form data:", error);
-      setFormState(INITIAL_FORM_STATE);
+      console.warn('Failed to load persisted form data:', error)
+      setFormState(INITIAL_FORM_STATE)
     }
-  }, [getPersistedFormData]);
+  }, [getPersistedFormData])
 
   // Reset form when modal opens/closes or populate with editing data
   useEffect(() => {
     if (visible) {
       if (editingWorkout) {
         // Populate form with existing workout data
-        const exerciseConfigs: WorkoutExerciseConfig[] =
-          editingWorkout.exercises.map((we) => ({
-            exerciseId: we.exercise_id,
-            exercise: we.exercise,
-            sets: we.sets,
-            reps: we.reps,
-            restSeconds: we.rest_seconds,
-            orderIndex: we.order_index,
-            notes: we.notes || "",
-          }));
+        const exerciseConfigs: WorkoutExerciseConfig[] = editingWorkout.exercises.map(we => ({
+          exerciseId: we.exercise_id,
+          exercise: we.exercise,
+          sets: we.sets,
+          reps: we.reps,
+          restSeconds: we.rest_seconds,
+          orderIndex: we.order_index,
+          notes: we.notes || '',
+        }))
 
         setFormState({
           name: editingWorkout.name,
-          description: editingWorkout.description || "",
+          description: editingWorkout.description || '',
           studentId: editingWorkout.student_id,
           selectedExercises: exerciseConfigs,
           loading: false,
           error: null,
           currentStep: WorkoutCreationStep.BASIC_INFO,
-        });
+        })
       } else {
         // Try to restore persisted form data
-        loadPersistedFormData();
+        loadPersistedFormData()
       }
-      setSelectedStudent(null);
+      setSelectedStudent(null)
     }
-  }, [visible, editingWorkout, loadPersistedFormData]);
+  }, [visible, editingWorkout, loadPersistedFormData])
 
   // Update selected student when studentId changes
   useEffect(() => {
     if (formState.studentId) {
-      const student = instructorStudents.find(
-        (s) => s.id === formState.studentId
-      );
-      setSelectedStudent(student || null);
+      const student = instructorStudents.find(s => s.id === formState.studentId)
+      setSelectedStudent(student || null)
     } else {
-      setSelectedStudent(null);
+      setSelectedStudent(null)
     }
-  }, [formState.studentId, instructorStudents]);
+  }, [formState.studentId, instructorStudents])
 
   const updateFormState = (updates: Partial<WorkoutFormState>) => {
-    setFormState((prev) => {
-      const newState = { ...prev, ...updates };
+    setFormState(prev => {
+      const newState = { ...prev, ...updates }
 
       // Persist form data when it changes (but not loading/error states)
       if (
         !editingWorkout &&
-        (updates.name ||
-          updates.description ||
-          updates.studentId ||
-          updates.selectedExercises)
+        (updates.name || updates.description || updates.studentId || updates.selectedExercises)
       ) {
         // Don't await this to avoid blocking UI
         getPersistedFormData()
@@ -147,85 +137,83 @@ export default function CreateWorkoutModal({
               // This would be handled by the hook's internal persistence
             }
           })
-          .catch(console.warn);
+          .catch(console.warn)
       }
 
-      return newState;
-    });
-  };
+      return newState
+    })
+  }
 
   const handleStudentSelect = (studentId: string) => {
-    updateFormState({ studentId });
-  };
-
-
+    updateFormState({ studentId })
+  }
 
   const validateCurrentStep = (): boolean => {
     switch (formState.currentStep) {
       case WorkoutCreationStep.BASIC_INFO:
-        return !!(formState.name.trim() && formState.studentId);
+        return !!(formState.name.trim() && formState.studentId)
 
       case WorkoutCreationStep.EXERCISE_SELECTION:
-        return formState.selectedExercises.length > 0;
+        return formState.selectedExercises.length > 0
 
       case WorkoutCreationStep.EXERCISE_CONFIGURATION:
         return formState.selectedExercises.every(
-          (ex) => ex.sets > 0 && ex.reps.trim() && ex.restSeconds >= 0
-        );
+          ex => ex.sets > 0 && ex.reps.trim() && ex.restSeconds >= 0
+        )
 
       default:
-        return true;
+        return true
     }
-  };
+  }
 
   const handleNextStep = () => {
     if (!validateCurrentStep()) {
       updateFormState({
-        error: "Por favor, preencha todos os campos obrigatórios.",
-      });
-      return;
+        error: 'Por favor, preencha todos os campos obrigatórios.',
+      })
+      return
     }
 
-    const steps = Object.values(WorkoutCreationStep);
-    const currentIndex = steps.indexOf(formState.currentStep);
+    const steps = Object.values(WorkoutCreationStep)
+    const currentIndex = steps.indexOf(formState.currentStep)
 
     if (currentIndex < steps.length - 1) {
       updateFormState({
         currentStep: steps[currentIndex + 1],
         error: null,
-      });
+      })
     }
-  };
+  }
 
   const handlePreviousStep = () => {
-    const steps = Object.values(WorkoutCreationStep);
-    const currentIndex = steps.indexOf(formState.currentStep);
+    const steps = Object.values(WorkoutCreationStep)
+    const currentIndex = steps.indexOf(formState.currentStep)
 
     if (currentIndex > 0) {
       updateFormState({
         currentStep: steps[currentIndex - 1],
         error: null,
-      });
+      })
     }
-  };
+  }
 
   const handleSaveWorkout = async () => {
     if (!user || !validateCurrentStep()) {
       updateFormState({
-        error: "Por favor, verifique todos os campos antes de salvar.",
-      });
-      return;
+        error: 'Por favor, verifique todos os campos antes de salvar.',
+      })
+      return
     }
 
-    clearError();
-    updateFormState({ loading: true, error: null });
+    clearError()
+    updateFormState({ loading: true, error: null })
 
     try {
       const workoutData = {
         name: formState.name.trim(),
         description: formState.description.trim() || undefined,
         studentId: formState.studentId,
-        exercises: formState.selectedExercises.map((ex) => ({
+        exercises: formState.selectedExercises.map(ex => ({
           exerciseId: ex.exerciseId,
           sets: ex.sets,
           reps: ex.reps.trim(),
@@ -233,9 +221,9 @@ export default function CreateWorkoutModal({
           orderIndex: ex.orderIndex,
           notes: ex.notes?.trim() || undefined,
         })),
-      };
+      }
 
-      let savedWorkout: WorkoutWithExercises;
+      let savedWorkout: WorkoutWithExercises
 
       if (editingWorkout) {
         // Update existing workout
@@ -243,91 +231,78 @@ export default function CreateWorkoutModal({
           name: workoutData.name,
           description: workoutData.description,
           exercises: workoutData.exercises,
-        });
+        })
       } else {
         // Create new workout
-        savedWorkout = await createWorkout(user.id, workoutData);
+        savedWorkout = await createWorkout(user.id, workoutData)
       }
 
-      updateFormState({ loading: false });
-      await clearPersistedFormData();
-      onSuccess(savedWorkout);
-      onClose();
+      updateFormState({ loading: false })
+      await clearPersistedFormData()
+      onSuccess(savedWorkout)
+      onClose()
     } catch (error) {
-      updateFormState({ loading: false });
+      updateFormState({ loading: false })
       // Error is handled by the hook and displayed by WorkoutFormWrapper
     }
-  };
+  }
 
   const handleRetry = () => {
-    retry();
-    handleSaveWorkout();
-  };
+    retry()
+    handleSaveWorkout()
+  }
 
   const handleClose = () => {
-    if (formState.loading) return;
+    if (formState.loading) return
 
     // Check if there's unsaved data
     const hasUnsavedData =
       formState.name.trim() ||
       formState.description.trim() ||
       formState.studentId ||
-      formState.selectedExercises.length > 0;
+      formState.selectedExercises.length > 0
 
     if (hasUnsavedData) {
       Alert.alert(
-        "Descartar alterações?",
-        "Você tem alterações não salvas. Deseja realmente sair?",
+        'Descartar alterações?',
+        'Você tem alterações não salvas. Deseja realmente sair?',
         [
-          { text: "Cancelar", style: "cancel" },
+          { text: 'Cancelar', style: 'cancel' },
           {
-            text: "Descartar",
-            style: "destructive",
+            text: 'Descartar',
+            style: 'destructive',
             onPress: onClose,
           },
         ]
-      );
+      )
     } else {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   const renderStepIndicator = () => {
-    const steps = Object.values(WorkoutCreationStep);
-    const currentIndex = steps.indexOf(formState.currentStep);
+    const steps = Object.values(WorkoutCreationStep)
+    const currentIndex = steps.indexOf(formState.currentStep)
 
     return (
       <View style={styles.stepIndicator}>
         {steps.map((step, index) => (
           <View key={step} style={styles.stepIndicatorItem}>
-            <View
-              style={[
-                styles.stepCircle,
-                index <= currentIndex && styles.stepCircleActive,
-              ]}
-            >
+            <View style={[styles.stepCircle, index <= currentIndex && styles.stepCircleActive]}>
               <ThemedText
-                style={[
-                  styles.stepNumber,
-                  index <= currentIndex && styles.stepNumberActive,
-                ]}
+                style={[styles.stepNumber, index <= currentIndex && styles.stepNumberActive]}
               >
                 {index + 1}
               </ThemedText>
             </View>
             {index < steps.length - 1 && (
-              <View
-                style={[
-                  styles.stepLine,
-                  index < currentIndex && styles.stepLineActive,
-                ]}
-              />
+              <View style={[styles.stepLine, index < currentIndex && styles.stepLineActive]} />
             )}
           </View>
         ))}
       </View>
-    );
-  };
+    )
+  }
 
   const renderBasicInfoStep = () => (
     <View style={styles.stepContent}>
@@ -338,7 +313,7 @@ export default function CreateWorkoutModal({
       <Input
         label="Nome do Treino *"
         value={formState.name}
-        onChangeText={(name) => updateFormState({ name })}
+        onChangeText={name => updateFormState({ name })}
         placeholder="Ex: Treino de Peito e Tríceps"
         style={styles.input}
         accessibilityLabel="Nome do treino"
@@ -347,7 +322,7 @@ export default function CreateWorkoutModal({
       <Input
         label="Descrição (opcional)"
         value={formState.description}
-        onChangeText={(description) => updateFormState({ description })}
+        onChangeText={description => updateFormState({ description })}
         placeholder="Descreva o objetivo do treino..."
         multiline
         numberOfLines={3}
@@ -356,11 +331,8 @@ export default function CreateWorkoutModal({
       />
 
       <ThemedText style={styles.label}>Aluno *</ThemedText>
-      <ScrollView
-        style={styles.studentList}
-        showsVerticalScrollIndicator={false}
-      >
-        {instructorStudents.map((student) => (
+      <ScrollView style={styles.studentList} showsVerticalScrollIndicator={false}>
+        {instructorStudents.map(student => (
           <Card
             key={student.id}
             style={[
@@ -378,9 +350,7 @@ export default function CreateWorkoutModal({
                 {student.email}
               </ThemedText>
             </View>
-            {formState.studentId === student.id && (
-              <View style={styles.selectedIndicator} />
-            )}
+            {formState.studentId === student.id && <View style={styles.selectedIndicator} />}
           </Card>
         ))}
       </ScrollView>
@@ -396,12 +366,12 @@ export default function CreateWorkoutModal({
         </Card>
       )}
     </View>
-  );
+  )
 
   const renderCurrentStep = () => {
     switch (formState.currentStep) {
       case WorkoutCreationStep.BASIC_INFO:
-        return renderBasicInfoStep();
+        return renderBasicInfoStep()
 
       case WorkoutCreationStep.EXERCISE_SELECTION:
         // This will be implemented in the next task
@@ -412,7 +382,7 @@ export default function CreateWorkoutModal({
             </ThemedText>
             <ThemedText>Em desenvolvimento...</ThemedText>
           </View>
-        );
+        )
 
       case WorkoutCreationStep.EXERCISE_CONFIGURATION:
         // This will be implemented in task 5
@@ -423,7 +393,7 @@ export default function CreateWorkoutModal({
             </ThemedText>
             <ThemedText>Em desenvolvimento...</ThemedText>
           </View>
-        );
+        )
 
       case WorkoutCreationStep.PREVIEW:
         return (
@@ -435,9 +405,7 @@ export default function CreateWorkoutModal({
             <Card style={styles.previewCard}>
               <ThemedText type="subtitle">{formState.name}</ThemedText>
               {formState.description && (
-                <ThemedText style={styles.previewDescription}>
-                  {formState.description}
-                </ThemedText>
+                <ThemedText style={styles.previewDescription}>{formState.description}</ThemedText>
               )}
               <ThemedText style={styles.previewStudent}>
                 Aluno: {selectedStudent?.full_name}
@@ -447,32 +415,32 @@ export default function CreateWorkoutModal({
               </ThemedText>
             </Card>
           </View>
-        );
+        )
 
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   const getStepTitle = () => {
-    const prefix = editingWorkout ? "Editar Treino" : "Novo Treino";
+    const prefix = editingWorkout ? 'Editar Treino' : 'Novo Treino'
     switch (formState.currentStep) {
       case WorkoutCreationStep.BASIC_INFO:
-        return `${prefix} - Informações`;
+        return `${prefix} - Informações`
       case WorkoutCreationStep.EXERCISE_SELECTION:
-        return `${prefix} - Exercícios`;
+        return `${prefix} - Exercícios`
       case WorkoutCreationStep.EXERCISE_CONFIGURATION:
-        return `${prefix} - Configuração`;
+        return `${prefix} - Configuração`
       case WorkoutCreationStep.PREVIEW:
-        return `${prefix} - Revisão`;
+        return `${prefix} - Revisão`
       default:
-        return prefix;
+        return prefix
     }
-  };
+  }
 
-  const isFirstStep = formState.currentStep === WorkoutCreationStep.BASIC_INFO;
-  const isLastStep = formState.currentStep === WorkoutCreationStep.PREVIEW;
-  const canProceed = validateCurrentStep();
+  const isFirstStep = formState.currentStep === WorkoutCreationStep.BASIC_INFO
+  const isLastStep = formState.currentStep === WorkoutCreationStep.PREVIEW
+  const canProceed = validateCurrentStep()
 
   return (
     <Modal
@@ -483,8 +451,8 @@ export default function CreateWorkoutModal({
     >
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         {/* Header */}
         <View style={styles.header}>
@@ -534,92 +502,82 @@ export default function CreateWorkoutModal({
             )}
 
             <Button
-              title={
-                isLastStep
-                  ? editingWorkout
-                    ? "Salvar Treino"
-                    : "Criar Treino"
-                  : "Próximo"
-              }
+              title={isLastStep ? (editingWorkout ? 'Salvar Treino' : 'Criar Treino') : 'Próximo'}
               variant="contained"
               onPress={isLastStep ? handleSaveWorkout : handleNextStep}
               disabled={!canProceed || operationLoading}
               style={[styles.footerButton, styles.primaryButton]}
               accessibilityLabel={
-                isLastStep
-                  ? editingWorkout
-                    ? "Salvar treino"
-                    : "Criar treino"
-                  : "Próxima etapa"
+                isLastStep ? (editingWorkout ? 'Salvar treino' : 'Criar treino') : 'Próxima etapa'
               }
             />
           </View>
         </WorkoutFormWrapper>
       </KeyboardAvoidingView>
     </Modal>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: '#f8f9fa',
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: "#e9ecef",
+    borderBottomColor: '#e9ecef',
   },
   headerTitle: {
     flex: 1,
-    textAlign: "center",
+    textAlign: 'center',
   },
   headerSpacer: {
     width: 80, // Same width as cancel button
   },
   stepIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 20,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   stepIndicatorItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   stepCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#e9ecef",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#e9ecef',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   stepCircleActive: {
-    backgroundColor: "#2563eb",
+    backgroundColor: '#2563eb',
   },
   stepNumber: {
     fontSize: 14,
-    fontWeight: "600",
-    color: "#6c757d",
+    fontWeight: '600',
+    color: '#6c757d',
   },
   stepNumberActive: {
-    color: "#fff",
+    color: '#fff',
   },
   stepLine: {
     width: 40,
     height: 2,
-    backgroundColor: "#e9ecef",
+    backgroundColor: '#e9ecef',
     marginHorizontal: 8,
   },
   stepLineActive: {
-    backgroundColor: "#2563eb",
+    backgroundColor: '#2563eb',
   },
   content: {
     flex: 1,
@@ -633,112 +591,112 @@ const styles = StyleSheet.create({
   },
   stepTitle: {
     marginBottom: 20,
-    textAlign: "center",
+    textAlign: 'center',
   },
   input: {
     marginBottom: 16,
   },
   label: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: 8,
-    color: "#212529",
+    color: '#212529',
   },
   studentList: {
     maxHeight: 200,
     marginBottom: 16,
   },
   studentCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
     marginBottom: 8,
     borderWidth: 2,
-    borderColor: "transparent",
+    borderColor: 'transparent',
   },
   studentCardSelected: {
-    borderColor: "#2563eb",
-    backgroundColor: "#f0f7ff",
+    borderColor: '#2563eb',
+    backgroundColor: '#f0f7ff',
   },
   studentInfo: {
     flex: 1,
   },
   studentEmail: {
-    color: "#6c757d",
+    color: '#6c757d',
     marginTop: 4,
   },
   selectedIndicator: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: "#2563eb",
+    backgroundColor: '#2563eb',
   },
   emptyState: {
     padding: 24,
-    alignItems: "center",
+    alignItems: 'center',
   },
   emptyStateText: {
     fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
+    fontWeight: '600',
+    textAlign: 'center',
     marginBottom: 8,
   },
   emptyStateSubtext: {
-    color: "#6c757d",
-    textAlign: "center",
+    color: '#6c757d',
+    textAlign: 'center',
   },
   previewCard: {
     padding: 20,
   },
   previewDescription: {
-    color: "#6c757d",
+    color: '#6c757d',
     marginTop: 8,
     marginBottom: 12,
   },
   previewStudent: {
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: 4,
   },
   previewExercises: {
-    color: "#2563eb",
-    fontWeight: "600",
+    color: '#2563eb',
+    fontWeight: '600',
   },
   errorCard: {
-    backgroundColor: "#fee",
-    borderColor: "#dc3545",
+    backgroundColor: '#fee',
+    borderColor: '#dc3545',
     borderWidth: 1,
     marginTop: 16,
   },
   errorText: {
-    color: "#dc3545",
-    textAlign: "center",
+    color: '#dc3545',
+    textAlign: 'center',
   },
   footer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: "#e9ecef",
+    borderTopColor: '#e9ecef',
   },
   footerButton: {
     flex: 1,
     marginHorizontal: 8,
   },
   primaryButton: {
-    backgroundColor: "#2563eb",
+    backgroundColor: '#2563eb',
   },
   loadingContainer: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loadingText: {
     marginLeft: 12,
-    color: "#6c757d",
+    color: '#6c757d',
   },
-});
+})

@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useCallback } from "react"
-import { View, FlatList, StyleSheet, RefreshControl, Alert } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { ThemedText } from "@/components/ThemedText"
-import { Card } from "@/components/common/Card"
-import { Button } from "@/components/common/Button"
-import { Loading } from "@/components/common/Loading"
-import { InviteStudentModal } from "@/components/modals/InviteStudentModal"
-import { StudentService } from "@/services/api/StudentService"
-import { useAuth } from "@/hooks/useAuth"
-import { Profile } from "@/types/database"
+import React, { useState, useEffect, useCallback } from 'react'
+import { View, FlatList, StyleSheet, RefreshControl, Alert } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { ThemedText } from '@/components/ThemedText'
+import { Card } from '@/components/common/Card'
+import { Button } from '@/components/common/Button'
+import { Loading } from '@/components/common/Loading'
+import { InviteStudentModal } from '@/components/modals/InviteStudentModal'
+import { StudentService } from '@/services/api/StudentService'
+import { useAuth } from '@/hooks/useAuth'
+import { Profile } from '@/types/database'
 
 // Using Profile directly since it already includes email
 
@@ -53,9 +53,12 @@ export default function InstructorStudentsScreen() {
           text: 'Ver Detalhes',
           onPress: () => {
             // TODO: Navigate to student details screen
-            Alert.alert('Em breve', 'Funcionalidade de detalhes do aluno será implementada em breve.')
-          }
-        }
+            Alert.alert(
+              'Em breve',
+              'Funcionalidade de detalhes do aluno será implementada em breve.'
+            )
+          },
+        },
       ]
     )
   }, [])
@@ -71,20 +74,12 @@ export default function InstructorStudentsScreen() {
   }, [fetchStudents])
 
   const renderStudentCard = ({ item }: { item: Profile }) => (
-    <Card 
-      style={styles.studentCard}
-      variant="elevated"
-      padding="medium"
-    >
+    <Card style={styles.studentCard} variant="elevated" padding="medium">
       <View style={styles.studentInfo}>
         <View style={styles.studentDetails}>
           <ThemedText style={styles.studentName}>{item.full_name}</ThemedText>
-          {item.email && (
-            <ThemedText style={styles.studentEmail}>{item.email}</ThemedText>
-          )}
-          {item.phone && (
-            <ThemedText style={styles.studentPhone}>{item.phone}</ThemedText>
-          )}
+          {item.email && <ThemedText style={styles.studentEmail}>{item.email}</ThemedText>}
+          {item.phone && <ThemedText style={styles.studentPhone}>{item.phone}</ThemedText>}
           <ThemedText style={styles.studentDate}>
             Cadastrado em: {new Date(item.created_at).toLocaleDateString('pt-BR')}
           </ThemedText>
@@ -117,11 +112,7 @@ export default function InstructorStudentsScreen() {
     <View style={styles.errorContainer}>
       <Card style={styles.errorCard} variant="outlined">
         <ThemedText style={styles.errorText}>{error}</ThemedText>
-        <Button
-          title="Tentar Novamente"
-          onPress={fetchStudents}
-          style={styles.retryButton}
-        />
+        <Button title="Tentar Novamente" onPress={fetchStudents} style={styles.retryButton} />
       </Card>
     </View>
   )
@@ -137,12 +128,10 @@ export default function InstructorStudentsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <ThemedText type="title" style={styles.title}>Meus Alunos</ThemedText>
-        <Button
-          title="Convidar"
-          onPress={() => setInviteModalVisible(true)}
-          size="small"
-        />
+        <ThemedText type="title" style={styles.title}>
+          Meus Alunos
+        </ThemedText>
+        <Button title="Convidar" onPress={() => setInviteModalVisible(true)} size="small" />
       </View>
 
       {error ? (
@@ -162,7 +151,7 @@ export default function InstructorStudentsScreen() {
 
           <FlatList
             data={students}
-            keyExtractor={(item) => item.id}
+            keyExtractor={item => item.id}
             renderItem={renderStudentCard}
             contentContainerStyle={styles.listContainer}
             refreshControl={

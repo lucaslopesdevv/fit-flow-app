@@ -43,7 +43,7 @@ describe('StudentDetailsModal', () => {
 
   it('renders correctly with student data', () => {
     const { getByText } = render(<StudentDetailsModal {...mockProps} />)
-    
+
     expect(getByText('Detalhes do Aluno')).toBeTruthy()
     expect(getByText('test@example.com')).toBeTruthy()
     expect(getByText('Test Student')).toBeTruthy()
@@ -53,47 +53,49 @@ describe('StudentDetailsModal', () => {
 
   it('shows edit form when edit button is pressed', () => {
     const { getByText, getByDisplayValue } = render(<StudentDetailsModal {...mockProps} />)
-    
+
     fireEvent.press(getByText('Editar Informações'))
-    
+
     expect(getByDisplayValue('Test Student')).toBeTruthy()
     expect(getByDisplayValue('123456789')).toBeTruthy()
     expect(getByText('Salvar')).toBeTruthy()
   })
 
   it('validates form fields correctly', async () => {
-    const { getByText, getByDisplayValue, findByText } = render(<StudentDetailsModal {...mockProps} />)
-    
+    const { getByText, getByDisplayValue, findByText } = render(
+      <StudentDetailsModal {...mockProps} />
+    )
+
     fireEvent.press(getByText('Editar Informações'))
-    
+
     const nameInput = getByDisplayValue('Test Student')
     fireEvent.changeText(nameInput, '')
-    
+
     fireEvent.press(getByText('Salvar'))
-    
+
     expect(await findByText('Nome completo é obrigatório')).toBeTruthy()
   })
 
   it('calls updateStudent when form is valid and submitted', async () => {
-    const { getByText, getByDisplayValue } = render(<StudentDetailsModal {...mockProps} />)
-    
-    // Mock successful update
-    (StudentService.updateStudent as jest.Mock).mockResolvedValueOnce({
+    const { getByText, getByDisplayValue } = render(<StudentDetailsModal {...mockProps} />)(
+      // Mock successful update
+      StudentService.updateStudent as jest.Mock
+    ).mockResolvedValueOnce({
       ...mockStudent,
       full_name: 'Updated Name',
       phone: '987654321',
     })
-    
+
     fireEvent.press(getByText('Editar Informações'))
-    
+
     const nameInput = getByDisplayValue('Test Student')
     fireEvent.changeText(nameInput, 'Updated Name')
-    
+
     const phoneInput = getByDisplayValue('123456789')
     fireEvent.changeText(phoneInput, '987654321')
-    
+
     fireEvent.press(getByText('Salvar'))
-    
+
     await waitFor(() => {
       expect(StudentService.updateStudent).toHaveBeenCalledWith('123', {
         full_name: 'Updated Name',
@@ -105,9 +107,9 @@ describe('StudentDetailsModal', () => {
 
   it('shows confirmation dialog when toggling student status', () => {
     const { getByText } = render(<StudentDetailsModal {...mockProps} />)
-    
+
     fireEvent.press(getByText('Desativar Aluno'))
-    
+
     expect(Alert.alert).toHaveBeenCalledWith(
       'Confirmar desativar',
       'Tem certeza que deseja desativar este aluno?',
@@ -119,25 +121,28 @@ describe('StudentDetailsModal', () => {
   })
 
   it('updates student status when confirmed', async () => {
-    const { getByText } = render(<StudentDetailsModal {...mockProps} />)
-    
-    // Mock the Alert.alert implementation to trigger the confirm action
-    (Alert.alert as jest.Mock).mockImplementationOnce((title: string, message: string, buttons: any[]) => {
-      // Find the confirm button and trigger its onPress
-      const confirmButton = buttons.find((button) => button.text === 'Confirmar')
-      if (confirmButton && confirmButton.onPress) {
-        confirmButton.onPress()
-      }
-    })
-    
-    // Mock successful update
-    (StudentService.updateStudent as jest.Mock).mockResolvedValueOnce({
-      ...mockStudent,
-      is_active: false,
-    })
-    
+    const { getByText } = render(<StudentDetailsModal {...mockProps} />)(
+      // Mock the Alert.alert implementation to trigger the confirm action
+      Alert.alert as jest.Mock
+    )
+      .mockImplementationOnce((title: string, message: string, buttons: any[]) => {
+        // Find the confirm button and trigger its onPress
+        const confirmButton = buttons.find(button => button.text === 'Confirmar')
+        if (confirmButton && confirmButton.onPress) {
+          confirmButton.onPress()
+        }
+      })
+      (
+        // Mock successful update
+        StudentService.updateStudent as jest.Mock
+      )
+      .mockResolvedValueOnce({
+        ...mockStudent,
+        is_active: false,
+      })
+
     fireEvent.press(getByText('Desativar Aluno'))
-    
+
     await waitFor(() => {
       expect(StudentService.updateStudent).toHaveBeenCalledWith('123', {
         is_active: false,

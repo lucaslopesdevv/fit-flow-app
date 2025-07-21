@@ -1,2 +1,2 @@
-import WorkoutListScreen from "@/screens/student/WorkoutListScreen"
+import WorkoutListScreen from '@/screens/student/WorkoutListScreen'
 export default WorkoutListScreen

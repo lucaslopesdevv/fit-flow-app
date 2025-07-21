@@ -19,15 +19,31 @@ export function ComponentsDemo() {
   return (
     <ScrollView style={styles.container}>
       <ThemedText style={styles.title}>Componentes Base - Demo</ThemedText>
-      
+
       <Divider label="Botões" />
       <View style={styles.section}>
         <Button title="Botão Padrão" onPress={() => console.log('Botão padrão pressionado')} />
-        <Button title="Outlined" variant="outlined" onPress={() => console.log('Botão outlined pressionado')} />
+        <Button
+          title="Outlined"
+          variant="outlined"
+          onPress={() => console.log('Botão outlined pressionado')}
+        />
         <Button title="Text" variant="text" onPress={() => console.log('Botão text pressionado')} />
-        <Button title="Pequeno" size="small" onPress={() => console.log('Botão pequeno pressionado')} />
-        <Button title="Grande" size="large" onPress={() => console.log('Botão grande pressionado')} />
-        <Button title="Full Width" fullWidth onPress={() => console.log('Botão full width pressionado')} />
+        <Button
+          title="Pequeno"
+          size="small"
+          onPress={() => console.log('Botão pequeno pressionado')}
+        />
+        <Button
+          title="Grande"
+          size="large"
+          onPress={() => console.log('Botão grande pressionado')}
+        />
+        <Button
+          title="Full Width"
+          fullWidth
+          onPress={() => console.log('Botão full width pressionado')}
+        />
       </View>
 
       <Divider label="Inputs" />
@@ -38,16 +54,8 @@ export function ComponentsDemo() {
           onChangeText={setInputValue}
           helperText="Digite seu nome completo"
         />
-        <Input
-          label="Email"
-          required
-          placeholder="exemplo@email.com"
-        />
-        <Input
-          label="Senha"
-          secureTextEntry
-          errorMessage="Senha muito fraca"
-        />
+        <Input label="Email" required placeholder="exemplo@email.com" />
+        <Input label="Senha" secureTextEntry errorMessage="Senha muito fraca" />
       </View>
 
       <Divider label="Cards" />
@@ -55,14 +63,18 @@ export function ComponentsDemo() {
         <Card>
           <ThemedText>Card padrão com conteúdo</ThemedText>
         </Card>
-        
+
         <Card variant="outlined">
           <Card.Title title="Card com Título" subtitle="Subtítulo" />
           <Card.Content>
             <ThemedText>Conteúdo do card outlined</ThemedText>
           </Card.Content>
           <Card.Actions>
-            <Button title="Ação" variant="text" onPress={() => console.log('Ação do card pressionada')} />
+            <Button
+              title="Ação"
+              variant="text"
+              onPress={() => console.log('Ação do card pressionada')}
+            />
           </Card.Actions>
         </Card>
       </View>
@@ -85,17 +97,8 @@ export function ComponentsDemo() {
 
       <Divider label="Loading" />
       <View style={styles.section}>
-        <Button 
-          title="Testar Loading" 
-          onPress={handleLoadingTest}
-          disabled={loading}
-        />
-        {loading && (
-          <Loading 
-            message="Carregando..." 
-            containerStyle={styles.loadingContainer}
-          />
-        )}
+        <Button title="Testar Loading" onPress={handleLoadingTest} disabled={loading} />
+        {loading && <Loading message="Carregando..." containerStyle={styles.loadingContainer} />}
       </View>
 
       <View style={styles.bottomSpace} />

@@ -54,7 +54,7 @@ jest.mock('@/services/supabase/supabase', () => ({
     auth: {
       getSession: jest.fn(),
       onAuthStateChange: jest.fn(() => ({
-        data: { subscription: { unsubscribe: jest.fn() } }
+        data: { subscription: { unsubscribe: jest.fn() } },
       })),
       signInWithPassword: jest.fn(),
       signOut: jest.fn(),
@@ -68,24 +68,24 @@ jest.mock('@/services/supabase/supabase', () => ({
         eq: jest.fn(() => ({
           single: jest.fn(() => ({
             data: null,
-            error: null
+            error: null,
           })),
           order: jest.fn(() => ({
             data: [],
-            error: null
-          }))
-        }))
+            error: null,
+          })),
+        })),
       })),
       insert: jest.fn(() => ({
         select: jest.fn(() => ({
           single: jest.fn(() => ({
             data: null,
-            error: null
-          }))
-        }))
-      }))
-    }))
-  }
+            error: null,
+          })),
+        })),
+      })),
+    })),
+  },
 }))
 
 // Mock React Native Paper components

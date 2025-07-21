@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -20,8 +20,8 @@ serve(async (req) => {
       {
         auth: {
           autoRefreshToken: false,
-          persistSession: false
-        }
+          persistSession: false,
+        },
       }
     )
 
@@ -30,16 +30,16 @@ serve(async (req) => {
     const token = authHeader.replace('Bearer ', '')
 
     // Verify the user's token and get user info
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token)
+
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // Check if user is an instructor
@@ -50,26 +50,20 @@ serve(async (req) => {
       .single()
 
     if (profileError || profile?.role !== 'instructor') {
-      return new Response(
-        JSON.stringify({ error: 'Only instructors can invite students' }),
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Only instructors can invite students' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // Get the request body
     const { email, full_name, phone } = await req.json()
 
     if (!email || !full_name) {
-      return new Response(
-        JSON.stringify({ error: 'Email and full name are required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Email and full name are required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // Check if student already exists
@@ -80,13 +74,10 @@ serve(async (req) => {
       .single()
 
     if (existingStudent) {
-      return new Response(
-        JSON.stringify({ error: 'Student with this email already exists' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Student with this email already exists' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // Create the user in Supabase Auth and send invitation email
@@ -99,45 +90,38 @@ serve(async (req) => {
           role: 'student',
           instructor_id: user.id,
           instructor_name: profile.full_name,
-          instructor_email: profile.email
+          instructor_email: profile.email,
         },
-        redirectTo: `${req.headers.get('origin') || 'http://localhost:8081'}/confirm`
+        redirectTo: `${req.headers.get('origin') || 'http://localhost:8081'}/confirm`,
       }
     )
 
     if (inviteError) {
       console.error('Error inviting user:', inviteError)
-      return new Response(
-        JSON.stringify({ error: inviteError.message }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+      return new Response(JSON.stringify({ error: inviteError.message }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // The user profile will be created automatically by the trigger
     // when the user accepts the invitation and signs up
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         user_id: newUser.user?.id,
-        message: 'Invitation sent successfully' 
+        message: 'Invitation sent successfully',
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
-
   } catch (error) {
     console.error('Error in invite-student function:', error)
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 })

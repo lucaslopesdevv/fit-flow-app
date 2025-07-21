@@ -14,7 +14,8 @@ class MemoryCache {
   private maxSize: number
   private defaultTTL: number
 
-  constructor(maxSize = 100, defaultTTL = 5 * 60 * 1000) { // 5 minutes default TTL
+  constructor(maxSize = 100, defaultTTL = 5 * 60 * 1000) {
+    // 5 minutes default TTL
     this.maxSize = maxSize
     this.defaultTTL = defaultTTL
   }
@@ -34,7 +35,7 @@ class MemoryCache {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      ttl: ttl || this.defaultTTL
+      ttl: ttl || this.defaultTTL,
     })
   }
 
@@ -43,7 +44,7 @@ class MemoryCache {
    */
   get<T>(key: string): T | null {
     const item = this.cache.get(key)
-    
+
     if (!item) {
       return null
     }
@@ -85,7 +86,7 @@ class MemoryCache {
     return {
       size: this.cache.size,
       maxSize: this.maxSize,
-      keys: Array.from(this.cache.keys())
+      keys: Array.from(this.cache.keys()),
     }
   }
 
@@ -131,15 +132,18 @@ export const cacheUtils = {
    */
   getImageCacheKey: (url: string) => {
     return `image:${url}`
-  }
+  },
 }
 
 // Cleanup expired entries every 5 minutes
-const cleanupInterval = setInterval(() => {
-  exerciseCache.cleanup()
-  workoutCache.cleanup()
-  imageCache.cleanup()
-}, 5 * 60 * 1000)
+const cleanupInterval = setInterval(
+  () => {
+    exerciseCache.cleanup()
+    workoutCache.cleanup()
+    imageCache.cleanup()
+  },
+  5 * 60 * 1000
+)
 
 // Export cleanup function for manual cleanup if needed
 export const cleanupCaches = () => {

@@ -1,2 +1,2 @@
-import InstructorNotificationsScreen from "@/screens/instructor/InstructorNotificationsScreen"
+import InstructorNotificationsScreen from '@/screens/instructor/InstructorNotificationsScreen'
 export default InstructorNotificationsScreen

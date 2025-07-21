@@ -42,12 +42,14 @@ export class StudentService {
   static async inviteStudent(invitation: StudentInvitation): Promise<InvitationResponse> {
     try {
       // Get the current session to pass the auth token
-      const { data: { session } } = await supabase.auth.getSession()
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
       if (!session) {
         return {
           success: false,
-          error: 'User must be authenticated'
+          error: 'User must be authenticated',
         }
       }
 
@@ -56,25 +58,25 @@ export class StudentService {
         body: {
           email: invitation.email,
           full_name: invitation.full_name,
-          phone: invitation.phone || null
+          phone: invitation.phone || null,
         },
         headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+          Authorization: `Bearer ${session.access_token}`,
+        },
       })
 
       if (error) {
         console.error('Error inviting student:', error)
         return {
           success: false,
-          error: error.message || 'Failed to invite student'
+          error: error.message || 'Failed to invite student',
         }
       }
 
       if (data.error) {
         return {
           success: false,
-          error: data.error
+          error: data.error,
         }
       }
 
@@ -86,14 +88,14 @@ export class StudentService {
           phone: invitation.phone,
           instructor_id: session.user.id,
           instructor_name: '',
-          instructor_email: session.user.email || ''
-        }
+          instructor_email: session.user.email || '',
+        },
       }
     } catch (error: any) {
       console.error('Error inviting student:', error)
       return {
         success: false,
-        error: error.message || 'Failed to invite student'
+        error: error.message || 'Failed to invite student',
       }
     }
   }
@@ -101,11 +103,14 @@ export class StudentService {
   /**
    * Get all students for the current instructor
    */
-  static async getInstructorStudents(instructorId?: string, includeInactive: boolean = false): Promise<Profile[]> {
+  static async getInstructorStudents(
+    instructorId?: string,
+    includeInactive: boolean = false
+  ): Promise<Profile[]> {
     try {
       const { data, error } = await supabase.rpc('get_instructor_students', {
         p_instructor_id: instructorId || null,
-        p_include_inactive: includeInactive
+        p_include_inactive: includeInactive,
       })
 
       if (error) {
@@ -129,7 +134,7 @@ export class StudentService {
         p_student_id: studentId,
         p_full_name: updates.full_name || null,
         p_phone: updates.phone || null,
-        p_avatar_url: updates.avatar_url || null
+        p_avatar_url: updates.avatar_url || null,
       })
 
       if (error) {
@@ -149,11 +154,7 @@ export class StudentService {
    */
   static async getStudentProfile(userId: string): Promise<Profile | null> {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single()
 
       if (error) {
         if (error.code === 'PGRST116') {
@@ -177,7 +178,7 @@ export class StudentService {
     try {
       const { data, error } = await supabase.rpc('update_student_status', {
         p_student_id: studentId,
-        p_is_active: true
+        p_is_active: true,
       })
 
       if (error) {
@@ -199,7 +200,7 @@ export class StudentService {
     try {
       const { data, error } = await supabase.rpc('update_student_status', {
         p_student_id: studentId,
-        p_is_active: false
+        p_is_active: false,
       })
 
       if (error) {
@@ -221,13 +222,15 @@ export class StudentService {
     try {
       const { data, error } = await supabase
         .from('workouts')
-        .select(`
+        .select(
+          `
           *,
           workout_exercises (
             *,
             exercise:exercises (*)
           )
-        `)
+        `
+        )
         .eq('student_id', studentId)
         .order('created_at', { ascending: false })
 
@@ -246,17 +249,22 @@ export class StudentService {
   /**
    * Get a specific workout with exercises for a student (with RLS compliance)
    */
-  static async getStudentWorkout(workoutId: string, studentId: string): Promise<WorkoutWithExercises | null> {
+  static async getStudentWorkout(
+    workoutId: string,
+    studentId: string
+  ): Promise<WorkoutWithExercises | null> {
     try {
       const { data, error } = await supabase
         .from('workouts')
-        .select(`
+        .select(
+          `
           *,
           workout_exercises (
             *,
             exercise:exercises (*)
           )
-        `)
+        `
+        )
         .eq('id', workoutId)
         .eq('student_id', studentId)
         .single()
@@ -279,7 +287,11 @@ export class StudentService {
   /**
    * Log a completed workout (with RLS compliance)
    */
-  static async logWorkout(workoutId: string, studentId: string, notes?: string): Promise<WorkoutLog> {
+  static async logWorkout(
+    workoutId: string,
+    studentId: string,
+    notes?: string
+  ): Promise<WorkoutLog> {
     try {
       const { data, error } = await supabase
         .from('workout_logs')
@@ -287,7 +299,7 @@ export class StudentService {
           workout_id: workoutId,
           student_id: studentId,
           completed_at: new Date().toISOString(),
-          notes
+          notes,
         })
         .select()
         .single()
@@ -390,24 +402,29 @@ export class StudentService {
       const completionRate = totalWorkouts > 0 ? (completedWorkouts / totalWorkouts) * 100 : 0
 
       // Calculate streaks
-      const { currentStreak, longestStreak } = this.calculateStreaks((logs || []).map(log => log.completed_at))
+      const { currentStreak, longestStreak } = this.calculateStreaks(
+        (logs || []).map(log => log.completed_at)
+      )
 
       return {
         totalWorkouts,
         completedWorkouts,
         completionRate: Math.round(completionRate * 100) / 100,
         currentStreak,
-        longestStreak
+        longestStreak,
       }
     } catch (error: any) {
       console.error('Error fetching student statistics:', error)
       throw new Error(error.message || 'Failed to fetch student statistics')
     }
-  }  /**
+  } /**
 
    * Calculate workout streaks based on completion dates
    */
-  private static calculateStreaks(completedDates: string[]): { currentStreak: number; longestStreak: number } {
+  private static calculateStreaks(completedDates: string[]): {
+    currentStreak: number
+    longestStreak: number
+  } {
     if (completedDates.length === 0) {
       return { currentStreak: 0, longestStreak: 0 }
     }
@@ -418,9 +435,9 @@ export class StudentService {
       .sort((a, b) => a.getTime() - b.getTime())
 
     // Group by day (ignore time)
-    const uniqueDays = Array.from(new Set(
-      dates.map(date => date.toDateString())
-    )).map(dateStr => new Date(dateStr))
+    const uniqueDays = Array.from(new Set(dates.map(date => date.toDateString()))).map(
+      dateStr => new Date(dateStr)
+    )
 
     let currentStreak = 0
     let longestStreak = 0
@@ -431,8 +448,10 @@ export class StudentService {
 
     // Calculate current streak (working backwards from today)
     for (let i = uniqueDays.length - 1; i >= 0; i--) {
-      const daysDiff = Math.floor((today.getTime() - uniqueDays[i].getTime()) / (1000 * 60 * 60 * 24))
-      
+      const daysDiff = Math.floor(
+        (today.getTime() - uniqueDays[i].getTime()) / (1000 * 60 * 60 * 24)
+      )
+
       if (daysDiff === currentStreak) {
         currentStreak++
       } else if (daysDiff === currentStreak + 1 && currentStreak === 0) {
@@ -445,8 +464,10 @@ export class StudentService {
 
     // Calculate longest streak
     for (let i = 1; i < uniqueDays.length; i++) {
-      const daysDiff = Math.floor((uniqueDays[i].getTime() - uniqueDays[i - 1].getTime()) / (1000 * 60 * 60 * 24))
-      
+      const daysDiff = Math.floor(
+        (uniqueDays[i].getTime() - uniqueDays[i - 1].getTime()) / (1000 * 60 * 60 * 24)
+      )
+
       if (daysDiff === 1) {
         tempStreak++
       } else {
@@ -454,7 +475,7 @@ export class StudentService {
         tempStreak = 1
       }
     }
-    
+
     longestStreak = Math.max(longestStreak, tempStreak)
 
     return { currentStreak, longestStreak }
@@ -470,13 +491,15 @@ export class StudentService {
 
       const { data, error } = await supabase
         .from('workout_logs')
-        .select(`
+        .select(
+          `
           *,
           workout:workouts (
             name,
             description
           )
-        `)
+        `
+        )
         .eq('student_id', studentId)
         .gte('completed_at', startDate.toISOString())
         .order('completed_at', { ascending: false })

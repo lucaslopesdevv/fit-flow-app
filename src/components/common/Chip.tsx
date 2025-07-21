@@ -1,30 +1,27 @@
-import React from "react"
-import {
-  Chip as PaperChip,
-  ChipProps as PaperChipProps,
-} from "react-native-paper"
-import { StyleSheet } from "react-native"
+import React from 'react'
+import { Chip as PaperChip, ChipProps as PaperChipProps } from 'react-native-paper'
+import { StyleSheet } from 'react-native'
 
-interface ChipProps extends Omit<PaperChipProps, "children"> {
+interface ChipProps extends Omit<PaperChipProps, 'children'> {
   label: string
-  variant?: "filled" | "outlined"
-  size?: "small" | "medium"
-  color?: "primary" | "secondary" | "success" | "warning" | "error"
+  variant?: 'filled' | 'outlined'
+  size?: 'small' | 'medium'
+  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error'
   children?: React.ReactNode
 }
 
 export function Chip({
   label,
-  variant = "filled",
-  size = "medium",
-  color = "primary",
+  variant = 'filled',
+  size = 'medium',
+  color = 'primary',
   style,
   children,
   ...props
 }: ChipProps) {
   const getSizeStyle = () => {
     switch (size) {
-      case "small":
+      case 'small':
         return styles.small
       default:
         return styles.medium
@@ -32,7 +29,7 @@ export function Chip({
   }
 
   const getVariantStyle = () => {
-    if (variant === "outlined") {
+    if (variant === 'outlined') {
       return styles.outlined
     }
     return {}
@@ -41,7 +38,7 @@ export function Chip({
   return (
     <PaperChip
       style={[styles.base, getSizeStyle(), getVariantStyle(), style]}
-      mode={variant === "outlined" ? "outlined" : "flat"}
+      mode={variant === 'outlined' ? 'outlined' : 'flat'}
       {...props}
     >
       {children ?? label}
@@ -61,6 +58,6 @@ const styles = StyleSheet.create({
     height: 32,
   },
   outlined: {
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
 })

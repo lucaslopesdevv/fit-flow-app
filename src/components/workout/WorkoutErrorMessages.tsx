@@ -13,11 +13,11 @@ interface WorkoutErrorMessageProps {
   compact?: boolean
 }
 
-export function WorkoutErrorMessage({ 
-  error, 
-  onRetry, 
-  onDismiss, 
-  compact = false 
+export function WorkoutErrorMessage({
+  error,
+  onRetry,
+  onDismiss,
+  compact = false,
 }: WorkoutErrorMessageProps) {
   const getErrorConfig = () => {
     switch (error.type) {
@@ -27,43 +27,43 @@ export function WorkoutErrorMessage({
           title: 'Problema de Conexão',
           message: 'Verifique sua conexão com a internet e tente novamente.',
           actionable: true,
-          color: '#f59e0b'
+          color: '#f59e0b',
         }
-      
+
       case WorkoutErrorType.PERMISSION_ERROR:
         return {
           icon: '🔒',
           title: 'Acesso Negado',
           message: 'Você não tem permissão para realizar esta ação.',
           actionable: false,
-          color: '#dc2626'
+          color: '#dc2626',
         }
-      
+
       case WorkoutErrorType.VALIDATION_ERROR:
         return {
           icon: '⚠️',
           title: 'Dados Inválidos',
           message: error.message,
           actionable: false,
-          color: '#ea580c'
+          color: '#ea580c',
         }
-      
+
       case WorkoutErrorType.NOT_FOUND_ERROR:
         return {
           icon: '🔍',
           title: 'Não Encontrado',
           message: 'O treino solicitado não foi encontrado. Pode ter sido removido.',
           actionable: false,
-          color: '#6b7280'
+          color: '#6b7280',
         }
-      
+
       default:
         return {
           icon: '❌',
           title: 'Erro',
           message: error.message || 'Ocorreu um erro inesperado.',
           actionable: true,
-          color: '#dc2626'
+          color: '#dc2626',
         }
     }
   }
@@ -79,12 +79,10 @@ export function WorkoutErrorMessage({
             <ThemedText style={[styles.compactTitle, { color: config.color }]}>
               {config.title}
             </ThemedText>
-            <ThemedText style={styles.compactMessage}>
-              {config.message}
-            </ThemedText>
+            <ThemedText style={styles.compactMessage}>{config.message}</ThemedText>
           </View>
         </View>
-        
+
         <View style={styles.compactActions}>
           {config.actionable && onRetry && (
             <Button
@@ -115,16 +113,10 @@ export function WorkoutErrorMessage({
           {config.title}
         </ThemedText>
       </View>
-      
-      <ThemedText style={styles.message}>
-        {config.message}
-      </ThemedText>
 
-      {error.field && (
-        <ThemedText style={styles.fieldError}>
-          Campo: {error.field}
-        </ThemedText>
-      )}
+      <ThemedText style={styles.message}>{config.message}</ThemedText>
+
+      {error.field && <ThemedText style={styles.fieldError}>Campo: {error.field}</ThemedText>}
 
       <View style={styles.actions}>
         {config.actionable && onRetry && (
@@ -153,9 +145,9 @@ interface NetworkErrorFallbackProps {
   message?: string
 }
 
-export function NetworkErrorFallback({ 
-  onRetry, 
-  message = 'Não foi possível carregar os dados.' 
+export function NetworkErrorFallback({
+  onRetry,
+  message = 'Não foi possível carregar os dados.',
 }: NetworkErrorFallbackProps) {
   return (
     <ThemedView style={styles.fallbackContainer}>
@@ -164,9 +156,7 @@ export function NetworkErrorFallback({
         <ThemedText type="subtitle" style={styles.fallbackTitle}>
           Sem Conexão
         </ThemedText>
-        <ThemedText style={styles.fallbackMessage}>
-          {message}
-        </ThemedText>
+        <ThemedText style={styles.fallbackMessage}>{message}</ThemedText>
         <Button
           title="Tentar Novamente"
           variant="contained"
@@ -186,12 +176,12 @@ interface EmptyStateFallbackProps {
   icon?: string
 }
 
-export function EmptyStateFallback({ 
-  title, 
-  message, 
-  actionTitle, 
-  onAction, 
-  icon = '📝' 
+export function EmptyStateFallback({
+  title,
+  message,
+  actionTitle,
+  onAction,
+  icon = '📝',
 }: EmptyStateFallbackProps) {
   return (
     <ThemedView style={styles.emptyContainer}>
@@ -200,9 +190,7 @@ export function EmptyStateFallback({
         <ThemedText type="subtitle" style={styles.emptyTitle}>
           {title}
         </ThemedText>
-        <ThemedText style={styles.emptyMessage}>
-          {message}
-        </ThemedText>
+        <ThemedText style={styles.emptyMessage}>{message}</ThemedText>
         {actionTitle && onAction && (
           <Button
             title={actionTitle}

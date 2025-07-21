@@ -28,11 +28,7 @@ export function Loading({
   return (
     <View style={containerStyles}>
       <ActivityIndicator size={size} {...props} />
-      {message && (
-        <ThemedText style={styles.message}>
-          {message}
-        </ThemedText>
-      )}
+      {message && <ThemedText style={styles.message}>{message}</ThemedText>}
     </View>
   )
 }

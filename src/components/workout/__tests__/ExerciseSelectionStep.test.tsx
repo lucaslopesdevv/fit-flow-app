@@ -10,25 +10,31 @@ jest.mock('@/services/supabase/supabase', () => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
           ilike: jest.fn(() => ({
-            order: jest.fn(() => Promise.resolve({
-              data: mockExercises,
-              error: null
-            }))
-          }))
+            order: jest.fn(() =>
+              Promise.resolve({
+                data: mockExercises,
+                error: null,
+              })
+            ),
+          })),
         })),
         ilike: jest.fn(() => ({
-          order: jest.fn(() => Promise.resolve({
-            data: mockExercises,
-            error: null
-          }))
+          order: jest.fn(() =>
+            Promise.resolve({
+              data: mockExercises,
+              error: null,
+            })
+          ),
         })),
-        order: jest.fn(() => Promise.resolve({
-          data: mockExercises,
-          error: null
-        }))
-      }))
-    }))
-  }
+        order: jest.fn(() =>
+          Promise.resolve({
+            data: mockExercises,
+            error: null,
+          })
+        ),
+      })),
+    })),
+  },
 }))
 
 const mockExercises: Exercise[] = [
@@ -39,7 +45,7 @@ const mockExercises: Exercise[] = [
     description: 'Exercício para peitoral',
     thumbnail_url: 'https://example.com/supino.jpg',
     created_by: 'instructor-1',
-    created_at: '2025-01-18T10:00:00Z'
+    created_at: '2025-01-18T10:00:00Z',
   },
   {
     id: '2',
@@ -48,8 +54,8 @@ const mockExercises: Exercise[] = [
     description: 'Exercício para pernas',
     thumbnail_url: 'https://example.com/agachamento.jpg',
     created_by: 'instructor-1',
-    created_at: '2025-01-18T10:00:00Z'
-  }
+    created_at: '2025-01-18T10:00:00Z',
+  },
 ]
 
 const mockSelectedExercises: WorkoutExerciseConfig[] = [
@@ -60,15 +66,15 @@ const mockSelectedExercises: WorkoutExerciseConfig[] = [
     reps: '10-12',
     restSeconds: 60,
     orderIndex: 1,
-    notes: ''
-  }
+    notes: '',
+  },
 ]
 
 const defaultProps = {
   selectedExercises: [],
   onExerciseAdd: jest.fn(),
   onExerciseRemove: jest.fn(),
-  onExerciseReorder: jest.fn()
+  onExerciseReorder: jest.fn(),
 }
 
 describe('ExerciseSelectionStep', () => {
@@ -77,20 +83,18 @@ describe('ExerciseSelectionStep', () => {
   })
 
   it('renders correctly with no selected exercises', async () => {
-    const { getByText, getByLabelText } = render(
-      <ExerciseSelectionStep {...defaultProps} />
-    )
+    const { getByText, getByLabelText } = render(<ExerciseSelectionStep {...defaultProps} />)
 
     // Should show search input
     expect(getByLabelText('Campo de busca de exercícios')).toBeTruthy()
-    
+
     // Should show muscle group filters
     expect(getByText('Peito')).toBeTruthy()
     expect(getByText('Costas')).toBeTruthy()
-    
+
     // Should show exercises section
     expect(getByText('Exercícios Disponíveis')).toBeTruthy()
-    
+
     // Wait for exercises to load
     await waitFor(() => {
       expect(getByText('Supino Reto')).toBeTruthy()
@@ -100,10 +104,7 @@ describe('ExerciseSelectionStep', () => {
 
   it('shows selected exercises preview when exercises are selected', () => {
     const { getByText } = render(
-      <ExerciseSelectionStep 
-        {...defaultProps} 
-        selectedExercises={mockSelectedExercises}
-      />
+      <ExerciseSelectionStep {...defaultProps} selectedExercises={mockSelectedExercises} />
     )
 
     expect(getByText('Exercícios Selecionados (1)')).toBeTruthy()
@@ -113,10 +114,7 @@ describe('ExerciseSelectionStep', () => {
   it('calls onExerciseAdd when exercise is selected', async () => {
     const onExerciseAdd = jest.fn()
     const { getByLabelText } = render(
-      <ExerciseSelectionStep 
-        {...defaultProps} 
-        onExerciseAdd={onExerciseAdd}
-      />
+      <ExerciseSelectionStep {...defaultProps} onExerciseAdd={onExerciseAdd} />
     )
 
     await waitFor(() => {
@@ -130,8 +128,8 @@ describe('ExerciseSelectionStep', () => {
   it('calls onExerciseRemove when exercise is deselected', async () => {
     const onExerciseRemove = jest.fn()
     const { getByLabelText } = render(
-      <ExerciseSelectionStep 
-        {...defaultProps} 
+      <ExerciseSelectionStep
+        {...defaultProps}
         selectedExercises={mockSelectedExercises}
         onExerciseRemove={onExerciseRemove}
       />
@@ -154,15 +152,16 @@ describe('ExerciseSelectionStep', () => {
     fireEvent.changeText(searchInput, 'Supino')
 
     // Wait for debounced search
-    await waitFor(() => {
-      expect(getByText('Supino Reto')).toBeTruthy()
-    }, { timeout: 500 })
+    await waitFor(
+      () => {
+        expect(getByText('Supino Reto')).toBeTruthy()
+      },
+      { timeout: 500 }
+    )
   })
 
   it('filters exercises by muscle group', async () => {
-    const { getByText } = render(
-      <ExerciseSelectionStep {...defaultProps} />
-    )
+    const { getByText } = render(<ExerciseSelectionStep {...defaultProps} />)
 
     const peitoButton = getByText('Peito')
     fireEvent.press(peitoButton)
@@ -184,13 +183,13 @@ describe('ExerciseSelectionStep', () => {
         reps: '12-15',
         restSeconds: 90,
         orderIndex: 2,
-        notes: ''
-      }
+        notes: '',
+      },
     ]
 
     const { getByLabelText } = render(
-      <ExerciseSelectionStep 
-        {...defaultProps} 
+      <ExerciseSelectionStep
+        {...defaultProps}
         selectedExercises={multipleSelected}
         onExerciseReorder={onExerciseReorder}
       />
@@ -203,9 +202,7 @@ describe('ExerciseSelectionStep', () => {
   })
 
   it('clears filters when clear button is pressed', async () => {
-    const { getByLabelText, getByText } = render(
-      <ExerciseSelectionStep {...defaultProps} />
-    )
+    const { getByLabelText, getByText } = render(<ExerciseSelectionStep {...defaultProps} />)
 
     // Set search term
     const searchInput = getByLabelText('Campo de busca de exercícios')
@@ -226,9 +223,7 @@ describe('ExerciseSelectionStep', () => {
   })
 
   it('shows accessibility labels and hints', () => {
-    const { getByLabelText } = render(
-      <ExerciseSelectionStep {...defaultProps} />
-    )
+    const { getByLabelText } = render(<ExerciseSelectionStep {...defaultProps} />)
 
     expect(getByLabelText('Campo de busca de exercícios')).toBeTruthy()
     expect(getByLabelText('Filtros por grupo muscular')).toBeTruthy()
@@ -240,21 +235,21 @@ describe('ExerciseSelectionStep', () => {
     const mockSupabaseError = {
       from: jest.fn(() => ({
         select: jest.fn(() => ({
-          order: jest.fn(() => Promise.resolve({
-            data: null,
-            error: { message: 'Network error' }
-          }))
-        }))
-      }))
+          order: jest.fn(() =>
+            Promise.resolve({
+              data: null,
+              error: { message: 'Network error' },
+            })
+          ),
+        })),
+      })),
     }
 
     jest.doMock('@/services/supabase/supabase', () => ({
-      supabase: mockSupabaseError
+      supabase: mockSupabaseError,
     }))
 
-    const { getByText } = render(
-      <ExerciseSelectionStep {...defaultProps} />
-    )
+    const { getByText } = render(<ExerciseSelectionStep {...defaultProps} />)
 
     await waitFor(() => {
       expect(getByText('Network error')).toBeTruthy()

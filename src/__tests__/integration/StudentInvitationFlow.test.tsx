@@ -21,7 +21,7 @@ jest.mock('@/services/supabase/supabase', () => ({
     functions: {
       invoke: jest.fn(),
     },
-  }
+  },
 }))
 
 describe('Student Invitation Flow Integration Tests', () => {
@@ -35,20 +35,20 @@ describe('Student Invitation Flow Integration Tests', () => {
       const mockSession = {
         user: {
           id: 'instructor-123',
-          email: 'instructor@test.com'
+          email: 'instructor@test.com',
         },
-        access_token: 'mock-token'
+        access_token: 'mock-token',
       }
 
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: mockSession },
-        error: null
+        error: null,
       })
 
       // Mock successful edge function call
       ;(supabase.functions.invoke as jest.Mock).mockResolvedValue({
         data: { success: true },
-        error: null
+        error: null,
       })
 
       // Mock successful invitation
@@ -60,8 +60,8 @@ describe('Student Invitation Flow Integration Tests', () => {
           phone: '123456789',
           instructor_id: 'instructor-123',
           instructor_name: 'Test Instructor',
-          instructor_email: 'instructor@test.com'
-        }
+          instructor_email: 'instructor@test.com',
+        },
       })
 
       const mockProps = {
@@ -70,14 +70,12 @@ describe('Student Invitation Flow Integration Tests', () => {
         onSuccess: jest.fn(),
       }
 
-      const { getByText, getByDisplayValue } = render(
-        <InviteStudentModal {...mockProps} />
-      )
+      const { getByText, getByDisplayValue } = render(<InviteStudentModal {...mockProps} />)
 
       // Fill invitation form
       const emailInput = getByDisplayValue('')
       fireEvent.changeText(emailInput, 'student@test.com')
-      
+
       const nameInput = getByDisplayValue('')
       fireEvent.changeText(nameInput, 'Test Student')
 
@@ -107,13 +105,13 @@ describe('Student Invitation Flow Integration Tests', () => {
       // Mock authenticated session
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: { access_token: 'mock-token' } },
-        error: null
+        error: null,
       })
 
       // Mock failed invitation
       ;(StudentService.inviteStudent as jest.Mock).mockResolvedValue({
         success: false,
-        error: 'Email already exists'
+        error: 'Email already exists',
       })
 
       const mockProps = {
@@ -122,14 +120,12 @@ describe('Student Invitation Flow Integration Tests', () => {
         onSuccess: jest.fn(),
       }
 
-      const { getByText, getByDisplayValue } = render(
-        <InviteStudentModal {...mockProps} />
-      )
+      const { getByText, getByDisplayValue } = render(<InviteStudentModal {...mockProps} />)
 
       // Fill form with existing email
       const emailInput = getByDisplayValue('')
       fireEvent.changeText(emailInput, 'existing@test.com')
-      
+
       const nameInput = getByDisplayValue('')
       fireEvent.changeText(nameInput, 'Test Student')
 
@@ -153,14 +149,12 @@ describe('Student Invitation Flow Integration Tests', () => {
         onSuccess: jest.fn(),
       }
 
-      const { getByText, getByDisplayValue } = render(
-        <InviteStudentModal {...mockProps} />
-      )
+      const { getByText, getByDisplayValue } = render(<InviteStudentModal {...mockProps} />)
 
       // Fill form with invalid email
       const emailInput = getByDisplayValue('')
       fireEvent.changeText(emailInput, 'invalid-email')
-      
+
       const nameInput = getByDisplayValue('')
       fireEvent.changeText(nameInput, 'Test Student')
 
@@ -181,19 +175,19 @@ describe('Student Invitation Flow Integration Tests', () => {
       // Mock no session
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },
-        error: null
+        error: null,
       })
 
       // Mock invitation attempt without auth
       ;(StudentService.inviteStudent as jest.Mock).mockResolvedValue({
         success: false,
-        error: 'User must be authenticated'
+        error: 'User must be authenticated',
       })
 
       const invitationData = {
         email: 'student@test.com',
         full_name: 'Test Student',
-        phone: '123456789'
+        phone: '123456789',
       }
 
       const result = await StudentService.inviteStudent(invitationData)
@@ -214,17 +208,17 @@ describe('Student Invitation Flow Integration Tests', () => {
           phone: '111111111',
           is_active: true,
           created_at: '2023-01-01T00:00:00Z',
-          updated_at: '2023-01-01T00:00:00Z'
+          updated_at: '2023-01-01T00:00:00Z',
         },
         {
-          id: 'student-2', 
+          id: 'student-2',
           email: 'student2@test.com',
           full_name: 'Student Two',
           phone: '222222222',
           is_active: true,
           created_at: '2023-01-02T00:00:00Z',
-          updated_at: '2023-01-02T00:00:00Z'
-        }
+          updated_at: '2023-01-02T00:00:00Z',
+        },
       ]
 
       ;(StudentService.getInstructorStudents as jest.Mock).mockResolvedValue(mockStudents)

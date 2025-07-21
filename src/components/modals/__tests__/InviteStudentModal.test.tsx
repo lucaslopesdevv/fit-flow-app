@@ -33,9 +33,7 @@ describe('InviteStudentModal', () => {
   })
 
   it('renders correctly when visible', () => {
-    const { getByText, getByDisplayValue } = render(
-      <InviteStudentModal {...mockProps} />
-    )
+    const { getByText, getByDisplayValue } = render(<InviteStudentModal {...mockProps} />)
 
     expect(getByText('Convidar Aluno')).toBeTruthy()
     expect(getByText('Preencha os dados do aluno para enviar um convite por email.')).toBeTruthy()
@@ -43,9 +41,7 @@ describe('InviteStudentModal', () => {
   })
 
   it('validates required fields', async () => {
-    const { getByText, getByTestId } = render(
-      <InviteStudentModal {...mockProps} />
-    )
+    const { getByText, getByTestId } = render(<InviteStudentModal {...mockProps} />)
 
     const submitButton = getByText('Enviar Convite')
     fireEvent.press(submitButton)
@@ -57,13 +53,11 @@ describe('InviteStudentModal', () => {
   })
 
   it('validates email format', async () => {
-    const { getByText, getByDisplayValue } = render(
-      <InviteStudentModal {...mockProps} />
-    )
+    const { getByText, getByDisplayValue } = render(<InviteStudentModal {...mockProps} />)
 
     const emailInput = getByDisplayValue('')
     fireEvent.changeText(emailInput, 'invalid-email')
-    
+
     const submitButton = getByText('Enviar Convite')
     fireEvent.press(submitButton)
 
@@ -73,17 +67,17 @@ describe('InviteStudentModal', () => {
   })
 
   it('calls StudentService.inviteStudent with correct data', async () => {
-    const mockInviteStudent = StudentService.inviteStudent as jest.MockedFunction<typeof StudentService.inviteStudent>
+    const mockInviteStudent = StudentService.inviteStudent as jest.MockedFunction<
+      typeof StudentService.inviteStudent
+    >
     mockInviteStudent.mockResolvedValue({ success: true, student_id: 'test-id' })
 
-    const { getByText, getByDisplayValue } = render(
-      <InviteStudentModal {...mockProps} />
-    )
+    const { getByText, getByDisplayValue } = render(<InviteStudentModal {...mockProps} />)
 
     // Fill form
     const emailInput = getByDisplayValue('')
     fireEvent.changeText(emailInput, 'test@example.com')
-    
+
     const nameInput = getByDisplayValue('')
     fireEvent.changeText(nameInput, 'Test Student')
 

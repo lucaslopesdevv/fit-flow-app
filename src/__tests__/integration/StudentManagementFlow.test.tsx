@@ -30,7 +30,7 @@ describe('Student Management Flow Integration Tests', () => {
     updated_at: '2023-01-01T00:00:00Z',
     is_active: true,
     role: 'student' as const,
-    instructor_id: 'instructor-123'
+    instructor_id: 'instructor-123',
   }
 
   beforeEach(() => {
@@ -42,7 +42,7 @@ describe('Student Management Flow Integration Tests', () => {
       const updatedStudent = {
         ...mockStudent,
         full_name: 'Updated Student Name',
-        phone: '987654321'
+        phone: '987654321',
       }
 
       ;(StudentService.updateStudent as jest.Mock).mockResolvedValue(updatedStudent)
@@ -54,9 +54,7 @@ describe('Student Management Flow Integration Tests', () => {
         student: mockStudent,
       }
 
-      const { getByText, getByDisplayValue } = render(
-        <StudentDetailsModal {...mockProps} />
-      )
+      const { getByText, getByDisplayValue } = render(<StudentDetailsModal {...mockProps} />)
 
       // Enter edit mode
       fireEvent.press(getByText('Editar Informações'))
@@ -94,9 +92,7 @@ describe('Student Management Flow Integration Tests', () => {
         student: mockStudent,
       }
 
-      const { getByText, getByDisplayValue } = render(
-        <StudentDetailsModal {...mockProps} />
-      )
+      const { getByText, getByDisplayValue } = render(<StudentDetailsModal {...mockProps} />)
 
       // Enter edit mode
       fireEvent.press(getByText('Editar Informações'))
@@ -122,7 +118,7 @@ describe('Student Management Flow Integration Tests', () => {
     it('should deactivate student with confirmation', async () => {
       const deactivatedStudent = {
         ...mockStudent,
-        is_active: false
+        is_active: false,
       }
 
       ;(StudentService.updateStudent as jest.Mock).mockResolvedValue(deactivatedStudent)
@@ -168,12 +164,12 @@ describe('Student Management Flow Integration Tests', () => {
     it('should reactivate inactive student', async () => {
       const inactiveStudent = {
         ...mockStudent,
-        is_active: false
+        is_active: false,
       }
 
       const reactivatedStudent = {
         ...mockStudent,
-        is_active: true
+        is_active: true,
       }
 
       ;(StudentService.updateStudent as jest.Mock).mockResolvedValue(reactivatedStudent)
@@ -254,8 +250,8 @@ describe('Student Management Flow Integration Tests', () => {
           updated_at: '2023-01-02T00:00:00Z',
           is_active: true,
           role: 'student' as const,
-          instructor_id: 'instructor-123'
-        }
+          instructor_id: 'instructor-123',
+        },
       ]
 
       ;(StudentService.getInstructorStudents as jest.Mock).mockResolvedValue(mockStudents)
@@ -274,8 +270,8 @@ describe('Student Management Flow Integration Tests', () => {
         {
           ...mockStudent,
           id: 'student-inactive',
-          is_active: false
-        }
+          is_active: false,
+        },
       ]
 
       ;(StudentService.getInstructorStudents as jest.Mock).mockResolvedValue(
@@ -294,8 +290,8 @@ describe('Student Management Flow Integration Tests', () => {
         {
           ...mockStudent,
           id: 'student-inactive',
-          is_active: false
-        }
+          is_active: false,
+        },
       ]
 
       ;(StudentService.getInstructorStudents as jest.Mock).mockResolvedValue(mockStudents)

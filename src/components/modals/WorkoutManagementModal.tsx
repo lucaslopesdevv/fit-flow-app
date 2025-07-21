@@ -1,13 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import {
-  View,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Alert,
-  RefreshControl,
-  TextInput,
-} from 'react-native'
+import { View, Modal, ScrollView, StyleSheet, Alert, RefreshControl, TextInput } from 'react-native'
 import { ThemedText } from '@/components/ThemedText'
 import { Button } from '@/components/common/Button'
 import { Card } from '@/components/common/Card'
@@ -37,14 +29,14 @@ const INITIAL_FILTER_STATE: FilterState = {
   search: '',
   studentId: '',
   sortBy: 'date',
-  sortOrder: 'desc'
+  sortOrder: 'desc',
 }
 
 export default function WorkoutManagementModal({
   visible,
   onClose,
   instructorStudents,
-  onWorkoutChange
+  onWorkoutChange,
 }: WorkoutManagementModalProps) {
   const { user } = useAuth()
   const [workouts, setWorkouts] = useState<WorkoutWithExercises[]>([])
@@ -53,7 +45,7 @@ export default function WorkoutManagementModal({
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState<FilterState>(INITIAL_FILTER_STATE)
-  
+
   // Modal states
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutWithExercises | null>(null)
   const [showWorkoutDetails, setShowWorkoutDetails] = useState(false)
@@ -71,7 +63,7 @@ export default function WorkoutManagementModal({
       setWorkouts(workoutsData)
     } catch (error) {
       let errorMessage = 'Erro ao carregar treinos.'
-      
+
       if (error instanceof WorkoutError) {
         switch (error.type) {
           case WorkoutErrorType.NETWORK_ERROR:
@@ -81,7 +73,7 @@ export default function WorkoutManagementModal({
             errorMessage = error.message
         }
       }
-      
+
       setError(errorMessage)
     } finally {
       setLoading(false)
@@ -101,10 +93,11 @@ export default function WorkoutManagementModal({
     // Apply search filter
     if (filters.search.trim()) {
       const searchLower = filters.search.toLowerCase()
-      filtered = filtered.filter(workout =>
-        workout.name.toLowerCase().includes(searchLower) ||
-        workout.description?.toLowerCase().includes(searchLower) ||
-        workout.student?.full_name?.toLowerCase().includes(searchLower)
+      filtered = filtered.filter(
+        workout =>
+          workout.name.toLowerCase().includes(searchLower) ||
+          workout.description?.toLowerCase().includes(searchLower) ||
+          workout.student?.full_name?.toLowerCase().includes(searchLower)
       )
     }
 
@@ -116,7 +109,7 @@ export default function WorkoutManagementModal({
     // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0
-      
+
       switch (filters.sortBy) {
         case 'name':
           comparison = a.name.localeCompare(b.name)
@@ -157,35 +150,31 @@ export default function WorkoutManagementModal({
   const handleDuplicateWorkout = async (workout: WorkoutWithExercises) => {
     if (!user?.id) return
 
-    Alert.alert(
-      'Duplicar Treino',
-      `Deseja duplicar o treino "${workout.name}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Duplicar',
-          onPress: async () => {
-            try {
-              setLoading(true)
-              await WorkoutService.duplicateWorkout(workout.id, user.id)
-              await fetchWorkouts()
-              onWorkoutChange?.()
-              Alert.alert('Sucesso', 'Treino duplicado com sucesso!')
-            } catch (error) {
-              let errorMessage = 'Erro ao duplicar treino.'
-              
-              if (error instanceof WorkoutError) {
-                errorMessage = error.message
-              }
-              
-              Alert.alert('Erro', errorMessage)
-            } finally {
-              setLoading(false)
+    Alert.alert('Duplicar Treino', `Deseja duplicar o treino "${workout.name}"?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Duplicar',
+        onPress: async () => {
+          try {
+            setLoading(true)
+            await WorkoutService.duplicateWorkout(workout.id, user.id)
+            await fetchWorkouts()
+            onWorkoutChange?.()
+            Alert.alert('Sucesso', 'Treino duplicado com sucesso!')
+          } catch (error) {
+            let errorMessage = 'Erro ao duplicar treino.'
+
+            if (error instanceof WorkoutError) {
+              errorMessage = error.message
             }
+
+            Alert.alert('Erro', errorMessage)
+          } finally {
+            setLoading(false)
           }
-        }
-      ]
-    )
+        },
+      },
+    ])
   }
 
   const handleDeleteWorkout = async (workout: WorkoutWithExercises) => {
@@ -208,17 +197,17 @@ export default function WorkoutManagementModal({
               Alert.alert('Sucesso', 'Treino excluído com sucesso!')
             } catch (error) {
               let errorMessage = 'Erro ao excluir treino.'
-              
+
               if (error instanceof WorkoutError) {
                 errorMessage = error.message
               }
-              
+
               Alert.alert('Erro', errorMessage)
             } finally {
               setLoading(false)
             }
-          }
-        }
+          },
+        },
       ]
     )
   }
@@ -227,7 +216,7 @@ export default function WorkoutManagementModal({
     fetchWorkouts()
     onWorkoutChange?.()
     setEditingWorkout(null)
-    
+
     const action = editingWorkout ? 'atualizado' : 'criado'
     Alert.alert('Sucesso', `Treino ${action} com sucesso!`)
   }
@@ -245,10 +234,10 @@ export default function WorkoutManagementModal({
       <Input
         placeholder="Buscar treinos..."
         value={filters.search}
-        onChangeText={(text) => updateFilter('search', text)}
+        onChangeText={text => updateFilter('search', text)}
         style={styles.searchInput}
       />
-      
+
       <View style={styles.filterRow}>
         <View style={styles.filterItem}>
           <ThemedText style={styles.filterLabel}>Aluno:</ThemedText>
@@ -256,23 +245,19 @@ export default function WorkoutManagementModal({
             {/* Simple picker implementation */}
             <Button
               title={
-                filters.studentId 
+                filters.studentId
                   ? instructorStudents.find(s => s.id === filters.studentId)?.full_name || 'Todos'
                   : 'Todos'
               }
               variant="outlined"
               onPress={() => {
-                Alert.alert(
-                  'Filtrar por Aluno',
-                  'Selecione um aluno:',
-                  [
-                    { text: 'Todos', onPress: () => updateFilter('studentId', '') },
-                    ...instructorStudents.map(student => ({
-                      text: student.full_name,
-                      onPress: () => updateFilter('studentId', student.id)
-                    }))
-                  ]
-                )
+                Alert.alert('Filtrar por Aluno', 'Selecione um aluno:', [
+                  { text: 'Todos', onPress: () => updateFilter('studentId', '') },
+                  ...instructorStudents.map(student => ({
+                    text: student.full_name,
+                    onPress: () => updateFilter('studentId', student.id),
+                  })),
+                ])
               }}
               style={styles.filterButton}
             />
@@ -283,20 +268,15 @@ export default function WorkoutManagementModal({
           <ThemedText style={styles.filterLabel}>Ordenar:</ThemedText>
           <Button
             title={
-              filters.sortBy === 'name' ? 'Nome' :
-              filters.sortBy === 'date' ? 'Data' : 'Aluno'
+              filters.sortBy === 'name' ? 'Nome' : filters.sortBy === 'date' ? 'Data' : 'Aluno'
             }
             variant="outlined"
             onPress={() => {
-              Alert.alert(
-                'Ordenar por',
-                'Selecione o critério:',
-                [
-                  { text: 'Nome', onPress: () => updateFilter('sortBy', 'name') },
-                  { text: 'Data', onPress: () => updateFilter('sortBy', 'date') },
-                  { text: 'Aluno', onPress: () => updateFilter('sortBy', 'student') }
-                ]
-              )
+              Alert.alert('Ordenar por', 'Selecione o critério:', [
+                { text: 'Nome', onPress: () => updateFilter('sortBy', 'name') },
+                { text: 'Data', onPress: () => updateFilter('sortBy', 'date') },
+                { text: 'Aluno', onPress: () => updateFilter('sortBy', 'student') },
+              ])
             }}
             style={styles.filterButton}
           />
@@ -321,15 +301,13 @@ export default function WorkoutManagementModal({
           <ThemedText type="subtitle" numberOfLines={1}>
             {workout.name}
           </ThemedText>
-          <ThemedText style={styles.workoutStudent}>
-            {workout.student?.full_name}
-          </ThemedText>
+          <ThemedText style={styles.workoutStudent}>{workout.student?.full_name}</ThemedText>
           <ThemedText style={styles.workoutMeta}>
-            {workout.exercises.length} exercício{workout.exercises.length !== 1 ? 's' : ''} • {' '}
+            {workout.exercises.length} exercício{workout.exercises.length !== 1 ? 's' : ''} •{' '}
             {new Date(workout.created_at).toLocaleDateString('pt-BR')}
           </ThemedText>
         </View>
-        
+
         <View style={styles.workoutActions}>
           <Button
             title="Ver"
@@ -347,21 +325,21 @@ export default function WorkoutManagementModal({
             title="⋯"
             variant="text"
             onPress={() => {
-              Alert.alert(
-                'Ações do Treino',
-                `Treino: ${workout.name}`,
-                [
-                  { text: 'Cancelar', style: 'cancel' },
-                  { text: 'Duplicar', onPress: () => handleDuplicateWorkout(workout) },
-                  { text: 'Excluir', style: 'destructive', onPress: () => handleDeleteWorkout(workout) }
-                ]
-              )
+              Alert.alert('Ações do Treino', `Treino: ${workout.name}`, [
+                { text: 'Cancelar', style: 'cancel' },
+                { text: 'Duplicar', onPress: () => handleDuplicateWorkout(workout) },
+                {
+                  text: 'Excluir',
+                  style: 'destructive',
+                  onPress: () => handleDeleteWorkout(workout),
+                },
+              ])
             }}
             style={styles.moreButton}
           />
         </View>
       </View>
-      
+
       {workout.description && (
         <ThemedText style={styles.workoutDescription} numberOfLines={2}>
           {workout.description}
@@ -429,29 +407,26 @@ export default function WorkoutManagementModal({
             {loading && !refreshing ? (
               <View style={styles.loadingContainer}>
                 <Loading />
-                <ThemedText style={styles.loadingText}>
-                  Carregando treinos...
-                </ThemedText>
+                <ThemedText style={styles.loadingText}>Carregando treinos...</ThemedText>
               </View>
             ) : filteredWorkouts.length === 0 ? (
               <Card style={styles.emptyContainer}>
                 <ThemedText style={styles.emptyText}>
-                  {filters.search || filters.studentId 
+                  {filters.search || filters.studentId
                     ? 'Nenhum treino encontrado com os filtros aplicados.'
-                    : 'Nenhum treino criado ainda.'
-                  }
+                    : 'Nenhum treino criado ainda.'}
                 </ThemedText>
                 <ThemedText style={styles.emptySubtext}>
                   {filters.search || filters.studentId
                     ? 'Tente ajustar os filtros de busca.'
-                    : 'Crie seu primeiro treino para começar!'
-                  }
+                    : 'Crie seu primeiro treino para começar!'}
                 </ThemedText>
               </Card>
             ) : (
               <View style={styles.workoutsList}>
                 <ThemedText style={styles.resultsCount}>
-                  {filteredWorkouts.length} treino{filteredWorkouts.length !== 1 ? 's' : ''} encontrado{filteredWorkouts.length !== 1 ? 's' : ''}
+                  {filteredWorkouts.length} treino{filteredWorkouts.length !== 1 ? 's' : ''}{' '}
+                  encontrado{filteredWorkouts.length !== 1 ? 's' : ''}
                 </ThemedText>
                 {filteredWorkouts.map(renderWorkoutCard)}
               </View>

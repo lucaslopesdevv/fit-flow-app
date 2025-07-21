@@ -1,2 +1,2 @@
-import InstructorHomeScreen from "@/screens/instructor/InstructorHomeScreen"
+import InstructorHomeScreen from '@/screens/instructor/InstructorHomeScreen'
 export default InstructorHomeScreen

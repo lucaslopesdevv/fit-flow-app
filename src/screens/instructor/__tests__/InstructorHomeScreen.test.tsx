@@ -14,11 +14,11 @@ jest.mock('@/services/supabase/supabase', () => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
           data: [],
-          error: null
-        }))
-      }))
-    }))
-  }
+          error: null,
+        })),
+      })),
+    })),
+  },
 }))
 
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>
@@ -28,7 +28,7 @@ describe('InstructorHomeScreen', () => {
   const mockUser = {
     id: 'instructor-1',
     email: 'instructor@test.com',
-    role: 'instructor' as const
+    role: 'instructor' as const,
   }
 
   beforeEach(() => {
@@ -37,11 +37,11 @@ describe('InstructorHomeScreen', () => {
       loading: false,
       signIn: jest.fn(),
       signOut: jest.fn(),
-      signUp: jest.fn()
+      signUp: jest.fn(),
     })
 
     mockWorkoutService.getInstructorWorkouts = jest.fn().mockResolvedValue([])
-    
+
     jest.spyOn(Alert, 'alert').mockImplementation(() => {})
   })
 
@@ -51,7 +51,7 @@ describe('InstructorHomeScreen', () => {
 
   it('renders create workout button', async () => {
     const { getByText } = render(<InstructorHomeScreen />)
-    
+
     await waitFor(() => {
       expect(getByText('Criar Treino')).toBeTruthy()
     })
@@ -59,7 +59,7 @@ describe('InstructorHomeScreen', () => {
 
   it('shows alert when create workout is pressed with no students', async () => {
     const { getByText } = render(<InstructorHomeScreen />)
-    
+
     await waitFor(() => {
       const createButton = getByText('Criar Treino')
       fireEvent.press(createButton)
@@ -74,7 +74,7 @@ describe('InstructorHomeScreen', () => {
 
   it('displays recent workouts section', async () => {
     const { getByText } = render(<InstructorHomeScreen />)
-    
+
     await waitFor(() => {
       expect(getByText('Treinos Recentes')).toBeTruthy()
     })
@@ -82,7 +82,7 @@ describe('InstructorHomeScreen', () => {
 
   it('displays KPI cards', async () => {
     const { getByText } = render(<InstructorHomeScreen />)
-    
+
     await waitFor(() => {
       expect(getByText('Alunos')).toBeTruthy()
       expect(getByText('Treinos')).toBeTruthy()

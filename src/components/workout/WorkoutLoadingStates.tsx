@@ -10,10 +10,10 @@ interface WorkoutLoadingProps {
   overlay?: boolean
 }
 
-export function WorkoutLoading({ 
-  message = 'Carregando treinos...', 
+export function WorkoutLoading({
+  message = 'Carregando treinos...',
   fullScreen = false,
-  overlay = false 
+  overlay = false,
 }: WorkoutLoadingProps) {
   const containerStyles = [
     styles.container,
@@ -48,7 +48,7 @@ export function WorkoutCreationLoading() {
 export function WorkoutListLoading() {
   return (
     <View style={styles.listContainer}>
-      {[1, 2, 3].map((index) => (
+      {[1, 2, 3].map(index => (
         <Card key={index} style={styles.skeletonCard} variant="outlined">
           <View style={styles.skeletonHeader}>
             <View style={styles.skeletonAvatar} />
@@ -74,7 +74,7 @@ export function WorkoutDetailsLoading() {
         <View style={styles.skeletonTitle} />
         <View style={styles.skeletonLineShort} />
         <View style={styles.skeletonStats}>
-          {[1, 2, 3].map((index) => (
+          {[1, 2, 3].map(index => (
             <View key={index} style={styles.skeletonStat}>
               <View style={styles.skeletonStatValue} />
               <View style={styles.skeletonStatLabel} />
@@ -85,7 +85,7 @@ export function WorkoutDetailsLoading() {
 
       <View style={styles.exercisesLoading}>
         <View style={styles.skeletonSectionTitle} />
-        {[1, 2, 3].map((index) => (
+        {[1, 2, 3].map(index => (
           <Card key={index} style={styles.skeletonExerciseCard} variant="outlined">
             <View style={styles.skeletonExerciseHeader}>
               <View style={styles.skeletonExerciseImage} />
@@ -96,7 +96,7 @@ export function WorkoutDetailsLoading() {
               <View style={styles.skeletonExerciseOrder} />
             </View>
             <View style={styles.skeletonExerciseConfig}>
-              {[1, 2, 3].map((configIndex) => (
+              {[1, 2, 3].map(configIndex => (
                 <View key={configIndex} style={styles.skeletonConfigItem}>
                   <View style={styles.skeletonConfigLabel} />
                   <View style={styles.skeletonConfigValue} />

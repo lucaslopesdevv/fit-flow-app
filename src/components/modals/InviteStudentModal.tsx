@@ -102,7 +102,7 @@ export function InviteStudentModal({ visible, onClose, onSuccess }: InviteStuden
       } else {
         // Handle specific error cases
         let errorMessage = result.error || 'Erro ao enviar convite'
-        
+
         if (result.error?.includes('already exists') || result.error?.includes('duplicate')) {
           errorMessage = 'Este email já está cadastrado no sistema'
         } else if (result.error?.includes('invalid email')) {
@@ -110,7 +110,7 @@ export function InviteStudentModal({ visible, onClose, onSuccess }: InviteStuden
         } else if (result.error?.includes('network') || result.error?.includes('connection')) {
           errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.'
         }
-        
+
         setErrors({ general: errorMessage })
       }
     } catch (error: any) {
@@ -148,12 +148,7 @@ export function InviteStudentModal({ visible, onClose, onSuccess }: InviteStuden
       >
         <View style={styles.header}>
           <ThemedText style={styles.title}>Convidar Aluno</ThemedText>
-          <Button
-            title="Cancelar"
-            variant="text"
-            onPress={handleClose}
-            disabled={loading}
-          />
+          <Button title="Cancelar" variant="text" onPress={handleClose} disabled={loading} />
         </View>
 
         <ScrollView
@@ -202,18 +197,12 @@ export function InviteStudentModal({ visible, onClose, onSuccess }: InviteStuden
             editable={!loading}
           />
 
-          {errors.general && (
-            <ThemedText style={styles.errorText}>
-              {errors.general}
-            </ThemedText>
-          )}
+          {errors.general && <ThemedText style={styles.errorText}>{errors.general}</ThemedText>}
 
           {loading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color="#2563eb" />
-              <ThemedText style={styles.loadingText}>
-                Enviando convite...
-              </ThemedText>
+              <ThemedText style={styles.loadingText}>Enviando convite...</ThemedText>
             </View>
           )}
         </ScrollView>

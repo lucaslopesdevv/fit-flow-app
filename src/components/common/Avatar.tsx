@@ -1,5 +1,10 @@
 import React from 'react'
-import { Avatar as PaperAvatar, AvatarImageProps, AvatarTextProps, AvatarIconProps } from 'react-native-paper'
+import {
+  Avatar as PaperAvatar,
+  AvatarImageProps,
+  AvatarTextProps,
+  AvatarIconProps,
+} from 'react-native-paper'
 import { StyleSheet } from 'react-native'
 
 type AvatarSize = 'small' | 'medium' | 'large' | 'xlarge'
@@ -28,33 +33,15 @@ const getSizeValue = (size: AvatarSize): number => {
 }
 
 function AvatarImage({ size = 'medium', style, ...props }: AvatarImageComponentProps) {
-  return (
-    <PaperAvatar.Image
-      size={getSizeValue(size)}
-      style={[styles.avatar, style]}
-      {...props}
-    />
-  )
+  return <PaperAvatar.Image size={getSizeValue(size)} style={[styles.avatar, style]} {...props} />
 }
 
 function AvatarText({ size = 'medium', style, ...props }: AvatarTextComponentProps) {
-  return (
-    <PaperAvatar.Text
-      size={getSizeValue(size)}
-      style={[styles.avatar, style]}
-      {...props}
-    />
-  )
+  return <PaperAvatar.Text size={getSizeValue(size)} style={[styles.avatar, style]} {...props} />
 }
 
 function AvatarIcon({ size = 'medium', style, ...props }: AvatarIconComponentProps) {
-  return (
-    <PaperAvatar.Icon
-      size={getSizeValue(size)}
-      style={[styles.avatar, style]}
-      {...props}
-    />
-  )
+  return <PaperAvatar.Icon size={getSizeValue(size)} style={[styles.avatar, style]} {...props} />
 }
 
 export const Avatar = {

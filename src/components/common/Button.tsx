@@ -31,11 +31,7 @@ export function Button({
   return (
     <PaperButton
       mode={variant}
-      style={[
-        getSizeStyle(),
-        fullWidth && styles.fullWidth,
-        style,
-      ]}
+      style={[getSizeStyle(), fullWidth && styles.fullWidth, style]}
       {...props}
     >
       {title}

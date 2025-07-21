@@ -7,15 +7,18 @@ This directory contains comprehensive error handling and loading state component
 ### Error Handling Components
 
 #### `WorkoutErrorBoundary`
+
 A React error boundary specifically designed for workout operations.
 
 **Features:**
+
 - Catches and handles workout-specific errors
 - Provides contextual error messages based on error type
 - Shows retry button for recoverable errors
 - Integrates with the workout error system
 
 **Usage:**
+
 ```tsx
 <WorkoutErrorBoundary onRetry={handleRetry} fallbackMessage="Custom error message">
   <YourWorkoutComponent />
@@ -23,15 +26,18 @@ A React error boundary specifically designed for workout operations.
 ```
 
 #### `WorkoutErrorMessage`
+
 Displays specific error messages with actionable buttons.
 
 **Features:**
+
 - Different error types with appropriate icons and colors
 - Compact and full display modes
 - Retry and dismiss actions
 - Field-specific error highlighting
 
 **Usage:**
+
 ```tsx
 <WorkoutErrorMessage
   error={workoutError}
@@ -42,37 +48,46 @@ Displays specific error messages with actionable buttons.
 ```
 
 #### `NetworkErrorFallback` & `EmptyStateFallback`
+
 Specialized fallback components for common scenarios.
 
 ### Loading State Components
 
 #### `WorkoutLoading`
+
 General loading indicator for workout operations.
 
 #### `WorkoutCreationLoading`
+
 Specialized loading state for workout creation with progress indication.
 
 #### `WorkoutListLoading`
+
 Skeleton loading state for workout lists with placeholder cards.
 
 #### `WorkoutDetailsLoading`
+
 Skeleton loading state for workout details with exercise placeholders.
 
 #### `WorkoutSavingIndicator`
+
 Overlay loading indicator for save operations.
 
 ### Wrapper Components
 
 #### `WorkoutOperationWrapper`
+
 Universal wrapper that handles loading, error, and empty states.
 
 **Features:**
+
 - Automatic state management
 - Error boundary integration
 - Customizable empty states
 - Loading overlays
 
 **Usage:**
+
 ```tsx
 <WorkoutOperationWrapper
   loading={loading}
@@ -89,9 +104,11 @@ Universal wrapper that handles loading, error, and empty states.
 ```
 
 #### `WorkoutListWrapper`
+
 Specialized wrapper for workout lists with role-based empty states.
 
 #### `WorkoutFormWrapper`
+
 Specialized wrapper for workout forms with saving indicators.
 
 ## Hook: `useWorkoutOperations`
@@ -99,6 +116,7 @@ Specialized wrapper for workout forms with saving indicators.
 A comprehensive hook that provides:
 
 ### Features
+
 - **Automatic retry logic** with exponential backoff
 - **Form data persistence** during errors
 - **Timeout handling** for network operations
@@ -106,13 +124,14 @@ A comprehensive hook that provides:
 - **Operation cancellation** support
 
 ### Configuration Options
+
 ```tsx
 const options = {
-  maxRetries: 3,           // Maximum retry attempts
-  retryDelay: 1000,        // Base delay between retries (ms)
-  timeout: 30000,          // Operation timeout (ms)
-  persistFormData: true,   // Enable form persistence
-  formStorageKey: 'key'    // Storage key for form data
+  maxRetries: 3, // Maximum retry attempts
+  retryDelay: 1000, // Base delay between retries (ms)
+  timeout: 30000, // Operation timeout (ms)
+  persistFormData: true, // Enable form persistence
+  formStorageKey: 'key', // Storage key for form data
 }
 
 const {
@@ -121,7 +140,7 @@ const {
   error,
   retryCount,
   canRetry,
-  
+
   // Operations
   createWorkout,
   updateWorkout,
@@ -131,19 +150,20 @@ const {
   getWorkoutDetails,
   duplicateWorkout,
   searchInstructorWorkouts,
-  
+
   // Form persistence
   getPersistedFormData,
   clearPersistedFormData,
-  
+
   // Control
   retry,
   cancel,
-  clearError
+  clearError,
 } = useWorkoutOperations(options)
 ```
 
 ### Error Types
+
 The system handles different error types with appropriate responses:
 
 - **`NETWORK_ERROR`**: Connection issues, timeouts - Shows retry option
@@ -152,12 +172,14 @@ The system handles different error types with appropriate responses:
 - **`NOT_FOUND_ERROR`**: Resource not found - No retry, suggests alternatives
 
 ### Retry Logic
+
 - Automatic retry for network errors
 - Exponential backoff (1s, 2s, 4s, etc.)
 - Maximum retry limit (configurable)
 - Manual retry option for users
 
 ### Form Persistence
+
 - Automatically saves form data during errors
 - Restores data when user returns
 - Expires after 24 hours
@@ -166,31 +188,26 @@ The system handles different error types with appropriate responses:
 ## Timeout Handling
 
 ### `withTimeout` Function
+
 Wraps promises with timeout functionality:
 
 ```tsx
-const result = await withTimeout(
-  someAsyncOperation(),
-  {
-    timeout: 30000,
-    timeoutMessage: 'Operation timed out',
-    abortController: controller
-  }
-)
+const result = await withTimeout(someAsyncOperation(), {
+  timeout: 30000,
+  timeoutMessage: 'Operation timed out',
+  abortController: controller,
+})
 ```
 
 ### `TimeoutManager` Class
+
 Manages multiple timeouts and abort controllers:
 
 ```tsx
 const manager = new TimeoutManager()
 
 // Create managed timeout
-await manager.withManagedTimeout(
-  'operation-key',
-  someAsyncOperation(),
-  { timeout: 30000 }
-)
+await manager.withManagedTimeout('operation-key', someAsyncOperation(), { timeout: 30000 })
 
 // Cleanup all timeouts
 manager.clearAll()
@@ -199,6 +216,7 @@ manager.clearAll()
 ## Integration Examples
 
 ### Basic Workout List
+
 ```tsx
 function WorkoutList() {
   const { getStudentWorkouts, loading, error, retry } = useWorkoutOperations()
@@ -234,6 +252,7 @@ function WorkoutList() {
 ```
 
 ### Workout Form with Persistence
+
 ```tsx
 function CreateWorkoutForm() {
   const {
@@ -243,10 +262,10 @@ function CreateWorkoutForm() {
     getPersistedFormData,
     clearPersistedFormData,
     retry,
-    clearError
+    clearError,
   } = useWorkoutOperations({
     persistFormData: true,
-    formStorageKey: 'create_workout_form'
+    formStorageKey: 'create_workout_form',
   })
 
   const [formData, setFormData] = useState(initialData)
@@ -274,15 +293,8 @@ function CreateWorkoutForm() {
   }
 
   return (
-    <WorkoutFormWrapper
-      saving={loading}
-      error={error}
-      onRetry={retry}
-      onErrorDismiss={clearError}
-    >
-      <form onSubmit={handleSubmit}>
-        {/* Form fields */}
-      </form>
+    <WorkoutFormWrapper saving={loading} error={error} onRetry={retry} onErrorDismiss={clearError}>
+      <form onSubmit={handleSubmit}>{/* Form fields */}</form>
     </WorkoutFormWrapper>
   )
 }
@@ -301,6 +313,7 @@ function CreateWorkoutForm() {
 ## Testing
 
 The error handling system includes:
+
 - Unit tests for error boundary behavior
 - Integration tests for retry logic
 - Form persistence tests
@@ -310,6 +323,7 @@ The error handling system includes:
 ## Accessibility
 
 All error and loading components include:
+
 - Proper ARIA labels and roles
 - Screen reader announcements
 - Keyboard navigation support

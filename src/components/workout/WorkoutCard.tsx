@@ -1,17 +1,10 @@
-import React from "react"
-import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Alert,
-  AccessibilityInfo
-} from "react-native"
-import { IconButton, Menu, Divider } from "react-native-paper"
-import { Card } from "@/components/common/Card"
-import { ThemedText } from "@/components/ThemedText"
-import { Avatar } from "@/components/common/Avatar"
-import { WorkoutCardProps, WorkoutWithExercises, Workout } from "@/types/database"
+import React from 'react'
+import { View, TouchableOpacity, StyleSheet, Image, Alert, AccessibilityInfo } from 'react-native'
+import { IconButton, Menu, Divider } from 'react-native-paper'
+import { Card } from '@/components/common/Card'
+import { ThemedText } from '@/components/ThemedText'
+import { Avatar } from '@/components/common/Avatar'
+import { WorkoutCardProps, WorkoutWithExercises, Workout } from '@/types/database'
 
 interface WorkoutCardState {
   loading: boolean
@@ -31,38 +24,47 @@ export function WorkoutCard({
   const [state, setState] = React.useState<WorkoutCardState>({
     loading: false,
     error: null,
-    menuVisible: false
+    menuVisible: false,
   })
 
   // Type guard to check if workout has exercises
   const workoutWithExercises = workout as WorkoutWithExercises
-  const hasExercises = workoutWithExercises.exercises && Array.isArray(workoutWithExercises.exercises)
+  const hasExercises =
+    workoutWithExercises.exercises && Array.isArray(workoutWithExercises.exercises)
   const exercises = hasExercises ? workoutWithExercises.exercises : []
 
   const getWorkoutStatus = (workout: Workout) => {
     const daysSinceCreated = Math.floor(
       (Date.now() - new Date(workout.created_at).getTime()) / (1000 * 60 * 60 * 24)
     )
-    
+
     if (daysSinceCreated <= 1) return 'new'
     return 'pending'
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'new': return '#28a745'
-      case 'completed': return '#6c757d'
-      case 'in_progress': return '#ffc107'
-      default: return '#007bff'
+      case 'new':
+        return '#28a745'
+      case 'completed':
+        return '#6c757d'
+      case 'in_progress':
+        return '#ffc107'
+      default:
+        return '#007bff'
     }
   }
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'new': return 'Novo'
-      case 'completed': return 'Concluído'
-      case 'in_progress': return 'Em andamento'
-      default: return 'Pendente'
+      case 'new':
+        return 'Novo'
+      case 'completed':
+        return 'Concluído'
+      case 'in_progress':
+        return 'Em andamento'
+      default:
+        return 'Pendente'
     }
   }
 
@@ -125,12 +127,10 @@ export function WorkoutCard({
 
   const handleCardPress = () => {
     if (state.loading) return
-    
+
     // Announce to screen readers
-    AccessibilityInfo.announceForAccessibility(
-      `Abrindo detalhes do treino ${workout.name}`
-    )
-    
+    AccessibilityInfo.announceForAccessibility(`Abrindo detalhes do treino ${workout.name}`)
+
     onPress()
   }
 
@@ -150,20 +150,18 @@ export function WorkoutCard({
       accessibilityRole="button"
       style={[styles.touchable, state.loading && styles.touchableDisabled]}
     >
-      <Card 
+      <Card
         style={[
           styles.workoutCard,
           state.loading && styles.cardLoading,
-          state.error && styles.cardError
-        ]} 
-        variant="elevated" 
+          state.error && styles.cardError,
+        ]}
+        variant="elevated"
         padding="medium"
       >
         {state.error && (
           <View style={styles.errorBanner}>
-            <ThemedText style={styles.errorText}>
-              {state.error}
-            </ThemedText>
+            <ThemedText style={styles.errorText}>{state.error}</ThemedText>
           </View>
         )}
 
@@ -172,7 +170,7 @@ export function WorkoutCard({
             <ThemedText type="subtitle" style={styles.workoutName}>
               {workout.name}
             </ThemedText>
-            
+
             {workout.description && (
               <ThemedText style={styles.workoutDescription} numberOfLines={2}>
                 {workout.description}
@@ -213,9 +211,7 @@ export function WorkoutCard({
                   {exercises.length} {exercises.length === 1 ? 'exercício' : 'exercícios'}
                 </ThemedText>
                 <ThemedText style={styles.separator}>•</ThemedText>
-                <ThemedText style={styles.statText}>
-                  {formatDate(workout.created_at)}
-                </ThemedText>
+                <ThemedText style={styles.statText}>{formatDate(workout.created_at)}</ThemedText>
               </View>
             </View>
           </View>
@@ -223,9 +219,7 @@ export function WorkoutCard({
           <View style={styles.cardRight}>
             <View style={styles.topRow}>
               <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-                <ThemedText style={styles.statusText}>
-                  {statusText}
-                </ThemedText>
+                <ThemedText style={styles.statusText}>{statusText}</ThemedText>
               </View>
 
               {/* Actions menu for instructor */}
@@ -284,16 +278,18 @@ export function WorkoutCard({
                         source={{ uri: exerciseData.exercise.thumbnail_url }}
                         style={[
                           styles.exerciseThumbnail,
-                          { zIndex: 3 - index, marginLeft: index * -8 }
+                          { zIndex: 3 - index, marginLeft: index * -8 },
                         ]}
                         resizeMode="cover"
                         accessibilityLabel={`Exercício ${exerciseData.exercise.name}`}
                       />
                     ) : (
-                      <View style={[
-                        styles.exercisePlaceholder,
-                        { zIndex: 3 - index, marginLeft: index * -8 }
-                      ]}>
+                      <View
+                        style={[
+                          styles.exercisePlaceholder,
+                          { zIndex: 3 - index, marginLeft: index * -8 },
+                        ]}
+                      >
                         <ThemedText style={styles.exercisePlaceholderText}>
                           {exerciseData.exercise.name.charAt(0).toUpperCase()}
                         </ThemedText>
@@ -301,7 +297,7 @@ export function WorkoutCard({
                     )}
                   </View>
                 ))}
-                
+
                 {exercises.length > 3 && (
                   <View style={[styles.moreExercises, { marginLeft: 3 * -8 + 16 }]}>
                     <ThemedText style={styles.moreExercisesText}>

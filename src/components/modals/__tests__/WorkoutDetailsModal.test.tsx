@@ -22,7 +22,7 @@ const mockWorkout: WorkoutWithExercises = {
     role: 'student',
     created_at: '2025-01-18T09:00:00Z',
     updated_at: '2025-01-18T09:00:00Z',
-    is_active: true
+    is_active: true,
   },
   instructor: {
     id: 'instructor-1',
@@ -34,7 +34,7 @@ const mockWorkout: WorkoutWithExercises = {
     role: 'instructor',
     created_at: '2025-01-18T08:00:00Z',
     updated_at: '2025-01-18T08:00:00Z',
-    is_active: true
+    is_active: true,
   },
   exercises: [
     {
@@ -54,8 +54,8 @@ const mockWorkout: WorkoutWithExercises = {
         video_url: null,
         thumbnail_url: 'https://example.com/supino.jpg',
         created_by: 'instructor-1',
-        created_at: '2025-01-18T07:00:00Z'
-      }
+        created_at: '2025-01-18T07:00:00Z',
+      },
     },
     {
       id: 'we-2',
@@ -74,17 +74,17 @@ const mockWorkout: WorkoutWithExercises = {
         video_url: null,
         thumbnail_url: null,
         created_by: 'instructor-1',
-        created_at: '2025-01-18T07:00:00Z'
-      }
-    }
-  ]
+        created_at: '2025-01-18T07:00:00Z',
+      },
+    },
+  ],
 }
 
 const mockProps = {
   visible: true,
   workout: mockWorkout,
   onClose: jest.fn(),
-  onStartWorkout: jest.fn()
+  onStartWorkout: jest.fn(),
 }
 
 describe('WorkoutDetailsModal', () => {
@@ -167,7 +167,7 @@ describe('WorkoutDetailsModal', () => {
   it('does not render start workout button when onStartWorkout is not provided', () => {
     const propsWithoutStart = {
       ...mockProps,
-      onStartWorkout: undefined
+      onStartWorkout: undefined,
     }
 
     render(<WorkoutDetailsModal {...propsWithoutStart} />)
@@ -178,7 +178,7 @@ describe('WorkoutDetailsModal', () => {
   it('renders empty state when no exercises', () => {
     const workoutWithoutExercises = {
       ...mockWorkout,
-      exercises: []
+      exercises: [],
     }
 
     render(<WorkoutDetailsModal {...mockProps} workout={workoutWithoutExercises} />)
@@ -199,18 +199,18 @@ describe('WorkoutDetailsModal', () => {
       exercises: [
         {
           ...mockWorkout.exercises[0],
-          rest_seconds: 30 // 30s
+          rest_seconds: 30, // 30s
         },
         {
           ...mockWorkout.exercises[1],
-          rest_seconds: 120 // 2m
+          rest_seconds: 120, // 2m
         },
         {
           ...mockWorkout.exercises[0],
           id: 'we-3',
-          rest_seconds: 150 // 2m 30s
-        }
-      ]
+          rest_seconds: 150, // 2m 30s
+        },
+      ],
     }
 
     render(<WorkoutDetailsModal {...mockProps} workout={workoutWithVariousRestTimes} />)
@@ -238,7 +238,7 @@ describe('WorkoutDetailsModal', () => {
   it('handles workout without description', () => {
     const workoutWithoutDescription = {
       ...mockWorkout,
-      description: undefined
+      description: undefined,
     }
 
     render(<WorkoutDetailsModal {...mockProps} workout={workoutWithoutDescription} />)
@@ -253,7 +253,7 @@ describe('WorkoutDetailsModal', () => {
     // First exercise has notes, second doesn't
     expect(screen.getByText('Observações:')).toBeTruthy()
     expect(screen.getByText('Foco na contração máxima')).toBeTruthy()
-    
+
     // Should only have one "Observações:" text (for the first exercise)
     expect(screen.getAllByText('Observações:')).toHaveLength(1)
   })

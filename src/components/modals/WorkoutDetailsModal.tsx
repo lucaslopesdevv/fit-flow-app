@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import {
-  View,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Image,
-  Dimensions,
-} from 'react-native'
+import { View, Modal, ScrollView, StyleSheet, Image, Dimensions } from 'react-native'
 import { ThemedText } from '@/components/ThemedText'
 import { Button } from '@/components/common/Button'
 import { Card } from '@/components/common/Card'
@@ -23,7 +16,7 @@ export default function WorkoutDetailsModal({
   workout: initialWorkout,
   workoutId,
   onClose,
-  onStartWorkout
+  onStartWorkout,
 }: WorkoutDetailsModalProps) {
   const [workout, setWorkout] = useState(initialWorkout)
   const { getWorkoutDetails, loading, error, retry, clearError } = useWorkoutOperations()
@@ -106,15 +99,11 @@ export default function WorkoutDetailsModal({
             <ThemedText type="subtitle" style={styles.exerciseName}>
               {exercise.name}
             </ThemedText>
-            <ThemedText style={styles.exerciseMuscleGroup}>
-              {exercise.muscle_group}
-            </ThemedText>
+            <ThemedText style={styles.exerciseMuscleGroup}>{exercise.muscle_group}</ThemedText>
           </View>
 
           <View style={styles.exerciseOrder}>
-            <ThemedText style={styles.exerciseOrderText}>
-              {index + 1}
-            </ThemedText>
+            <ThemedText style={styles.exerciseOrderText}>{index + 1}</ThemedText>
           </View>
         </View>
 
@@ -132,9 +121,7 @@ export default function WorkoutDetailsModal({
 
             <View style={styles.configItem}>
               <ThemedText style={styles.configLabel}>Descanso</ThemedText>
-              <ThemedText style={styles.configValue}>
-                {formatRestTime(rest_seconds)}
-              </ThemedText>
+              <ThemedText style={styles.configValue}>{formatRestTime(rest_seconds)}</ThemedText>
             </View>
           </View>
 
@@ -179,113 +166,105 @@ export default function WorkoutDetailsModal({
           fallbackMessage="Não foi possível carregar os detalhes do treino."
         >
           {workout && (
-            <ScrollView 
+            <ScrollView
               style={styles.content}
               contentContainerStyle={styles.contentContainer}
               showsVerticalScrollIndicator={false}
             >
-          {/* Workout Info */}
-          <Card style={styles.workoutInfoCard} variant="elevated" padding="large">
-            <ThemedText type="title" style={styles.workoutName}>
-              {workout.name}
-            </ThemedText>
-
-            {workout.description && (
-              <ThemedText style={styles.workoutDescription}>
-                {workout.description}
-              </ThemedText>
-            )}
-
-            <View style={styles.workoutMeta}>
-              {/* Instructor Info */}
-              {workout.instructor && (
-                <View style={styles.metaRow}>
-                  <Avatar.Text
-                    label={getInitials(workout.instructor.full_name)}
-                    size="small"
-                    style={styles.avatar}
-                  />
-                  <View style={styles.metaInfo}>
-                    <ThemedText style={styles.metaLabel}>Instrutor</ThemedText>
-                    <ThemedText style={styles.metaValue}>
-                      {workout.instructor.full_name}
-                    </ThemedText>
-                  </View>
-                </View>
-              )}
-
-              {/* Student Info (for instructor view) */}
-              {workout.student && (
-                <View style={styles.metaRow}>
-                  <Avatar.Text
-                    label={getInitials(workout.student.full_name)}
-                    size="small"
-                    style={styles.avatar}
-                  />
-                  <View style={styles.metaInfo}>
-                    <ThemedText style={styles.metaLabel}>Aluno</ThemedText>
-                    <ThemedText style={styles.metaValue}>
-                      {workout.student.full_name}
-                    </ThemedText>
-                  </View>
-                </View>
-              )}
-
-              {/* Workout Stats */}
-              <View style={styles.statsRow}>
-                <View style={styles.statItem}>
-                  <ThemedText style={styles.statValue}>
-                    {workout.exercises.length}
-                  </ThemedText>
-                  <ThemedText style={styles.statLabel}>
-                    {workout.exercises.length === 1 ? 'Exercício' : 'Exercícios'}
-                  </ThemedText>
-                </View>
-
-                <View style={styles.statItem}>
-                  <ThemedText style={styles.statValue}>
-                    {workout.exercises.reduce((total, ex) => total + ex.sets, 0)}
-                  </ThemedText>
-                  <ThemedText style={styles.statLabel}>
-                    Séries Totais
-                  </ThemedText>
-                </View>
-
-                <View style={styles.statItem}>
-                  <ThemedText style={styles.statValue}>
-                    {formatRestTime(
-                      Math.round(
-                        workout.exercises.reduce((total, ex) => total + ex.rest_seconds, 0) / 
-                        workout.exercises.length
-                      )
-                    )}
-                  </ThemedText>
-                  <ThemedText style={styles.statLabel}>
-                    Descanso Médio
-                  </ThemedText>
-                </View>
-              </View>
-            </View>
-          </Card>
-
-          {/* Exercises List */}
-          <View style={styles.exercisesSection}>
-            <ThemedText type="subtitle" style={styles.sectionTitle}>
-              Exercícios ({workout.exercises.length})
-            </ThemedText>
-
-            {workout.exercises.length > 0 ? (
-              workout.exercises.map((exerciseData, index) => 
-                renderExerciseItem(exerciseData, index)
-              )
-            ) : (
-              <Card style={styles.emptyState} variant="outlined" padding="large">
-                <ThemedText style={styles.emptyStateText}>
-                  Nenhum exercício encontrado neste treino.
+              {/* Workout Info */}
+              <Card style={styles.workoutInfoCard} variant="elevated" padding="large">
+                <ThemedText type="title" style={styles.workoutName}>
+                  {workout.name}
                 </ThemedText>
+
+                {workout.description && (
+                  <ThemedText style={styles.workoutDescription}>{workout.description}</ThemedText>
+                )}
+
+                <View style={styles.workoutMeta}>
+                  {/* Instructor Info */}
+                  {workout.instructor && (
+                    <View style={styles.metaRow}>
+                      <Avatar.Text
+                        label={getInitials(workout.instructor.full_name)}
+                        size="small"
+                        style={styles.avatar}
+                      />
+                      <View style={styles.metaInfo}>
+                        <ThemedText style={styles.metaLabel}>Instrutor</ThemedText>
+                        <ThemedText style={styles.metaValue}>
+                          {workout.instructor.full_name}
+                        </ThemedText>
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Student Info (for instructor view) */}
+                  {workout.student && (
+                    <View style={styles.metaRow}>
+                      <Avatar.Text
+                        label={getInitials(workout.student.full_name)}
+                        size="small"
+                        style={styles.avatar}
+                      />
+                      <View style={styles.metaInfo}>
+                        <ThemedText style={styles.metaLabel}>Aluno</ThemedText>
+                        <ThemedText style={styles.metaValue}>
+                          {workout.student.full_name}
+                        </ThemedText>
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Workout Stats */}
+                  <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                      <ThemedText style={styles.statValue}>{workout.exercises.length}</ThemedText>
+                      <ThemedText style={styles.statLabel}>
+                        {workout.exercises.length === 1 ? 'Exercício' : 'Exercícios'}
+                      </ThemedText>
+                    </View>
+
+                    <View style={styles.statItem}>
+                      <ThemedText style={styles.statValue}>
+                        {workout.exercises.reduce((total, ex) => total + ex.sets, 0)}
+                      </ThemedText>
+                      <ThemedText style={styles.statLabel}>Séries Totais</ThemedText>
+                    </View>
+
+                    <View style={styles.statItem}>
+                      <ThemedText style={styles.statValue}>
+                        {formatRestTime(
+                          Math.round(
+                            workout.exercises.reduce((total, ex) => total + ex.rest_seconds, 0) /
+                              workout.exercises.length
+                          )
+                        )}
+                      </ThemedText>
+                      <ThemedText style={styles.statLabel}>Descanso Médio</ThemedText>
+                    </View>
+                  </View>
+                </View>
               </Card>
-            )}
-          </View>
+
+              {/* Exercises List */}
+              <View style={styles.exercisesSection}>
+                <ThemedText type="subtitle" style={styles.sectionTitle}>
+                  Exercícios ({workout.exercises.length})
+                </ThemedText>
+
+                {workout.exercises.length > 0 ? (
+                  workout.exercises.map((exerciseData, index) =>
+                    renderExerciseItem(exerciseData, index)
+                  )
+                ) : (
+                  <Card style={styles.emptyState} variant="outlined" padding="large">
+                    <ThemedText style={styles.emptyStateText}>
+                      Nenhum exercício encontrado neste treino.
+                    </ThemedText>
+                  </Card>
+                )}
+              </View>
             </ScrollView>
           )}
         </WorkoutOperationWrapper>

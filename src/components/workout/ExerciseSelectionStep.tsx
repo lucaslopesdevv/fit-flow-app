@@ -1,37 +1,27 @@
-import { useEffect, useState, useCallback, useMemo, memo } from "react";
-import {
-  View,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
-import { supabase } from "../../services/supabase/supabase";
-import { Card } from "../common/Card";
-import { Input } from "../common/Input";
-import { Button } from "../common/Button";
-import { ThemedText } from "../ThemedText";
-import { ThemedView } from "../ThemedView";
-import LazyImage, { ImagePlaceholder } from "../common/LazyImage";
-import {
-  Exercise,
-  ExerciseSelectionStepProps,
-  WorkoutExerciseConfig,
-} from "../../types/database";
-import { Loading } from "../common/Loading";
-import { debounce } from "../../utils/debounce";
-import { exerciseCache, cacheUtils } from "../../utils/cache";
+import { useEffect, useState, useCallback, useMemo, memo } from 'react'
+import { View, FlatList, StyleSheet, TouchableOpacity, ScrollView } from 'react-native'
+import { supabase } from '../../services/supabase/supabase'
+import { Card } from '../common/Card'
+import { Input } from '../common/Input'
+import { Button } from '../common/Button'
+import { ThemedText } from '../ThemedText'
+import { ThemedView } from '../ThemedView'
+import LazyImage, { ImagePlaceholder } from '../common/LazyImage'
+import { Exercise, ExerciseSelectionStepProps, WorkoutExerciseConfig } from '../../types/database'
+import { Loading } from '../common/Loading'
+import { debounce } from '../../utils/debounce'
+import { exerciseCache, cacheUtils } from '../../utils/cache'
 
 const MUSCLE_GROUPS = [
-  "Peito",
-  "Costas",
-  "Pernas",
-  "Ombros",
-  "Bíceps",
-  "Tríceps",
-  "Abdômen",
-  "Glúteos",
-];
+  'Peito',
+  'Costas',
+  'Pernas',
+  'Ombros',
+  'Bíceps',
+  'Tríceps',
+  'Abdômen',
+  'Glúteos',
+]
 
 const ExerciseSelectionStep = memo(
   ({
@@ -40,132 +30,123 @@ const ExerciseSelectionStep = memo(
     onExerciseRemove,
     onExerciseReorder,
   }: ExerciseSelectionStepProps) => {
-    const [exercises, setExercises] = useState<Exercise[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [search, setSearch] = useState("");
-    const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+    const [exercises, setExercises] = useState<Exercise[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [search, setSearch] = useState('')
+    const [selectedGroup, setSelectedGroup] = useState<string | null>(null)
 
     // Memoized selected exercise IDs for quick lookup
     const selectedExerciseIds = useMemo(
-      () => new Set(selectedExercises.map((ex) => ex.exerciseId)),
+      () => new Set(selectedExercises.map(ex => ex.exerciseId)),
       [selectedExercises]
-    );
+    )
 
     const fetchExercises = useCallback(
-      async (searchTerm: string = "", muscleGroup: string | null = null) => {
-        setLoading(true);
-        setError(null);
+      async (searchTerm: string = '', muscleGroup: string | null = null) => {
+        setLoading(true)
+        setError(null)
 
         // Generate cache key
-        const cacheKey = cacheUtils.getExerciseQueryKey(
-          searchTerm,
-          muscleGroup || undefined
-        );
+        const cacheKey = cacheUtils.getExerciseQueryKey(searchTerm, muscleGroup || undefined)
 
         // Check cache first
-        const cachedExercises = exerciseCache.get<Exercise[]>(cacheKey);
+        const cachedExercises = exerciseCache.get<Exercise[]>(cacheKey)
         if (cachedExercises) {
-          setExercises(cachedExercises);
-          setLoading(false);
-          return;
+          setExercises(cachedExercises)
+          setLoading(false)
+          return
         }
 
         try {
-          let query = supabase.from("exercises").select("*");
+          let query = supabase.from('exercises').select('*')
 
           if (muscleGroup) {
-            query = query.eq("muscle_group", muscleGroup);
+            query = query.eq('muscle_group', muscleGroup)
           }
 
           if (searchTerm.trim()) {
-            query = query.ilike("name", `%${searchTerm.trim()}%`);
+            query = query.ilike('name', `%${searchTerm.trim()}%`)
           }
 
-          const { data, error } = await query.order("name");
+          const { data, error } = await query.order('name')
 
           if (error) {
-            setError(error.message);
+            setError(error.message)
           } else {
-            const exerciseData = data || [];
-            setExercises(exerciseData);
+            const exerciseData = data || []
+            setExercises(exerciseData)
 
             // Cache the results for 10 minutes
-            exerciseCache.set(cacheKey, exerciseData, 10 * 60 * 1000);
+            exerciseCache.set(cacheKey, exerciseData, 10 * 60 * 1000)
           }
         } catch (err) {
-          setError("Erro ao carregar exercícios");
+          setError('Erro ao carregar exercícios')
         } finally {
-          setLoading(false);
+          setLoading(false)
         }
       },
       []
-    );
+    )
 
     // Debounced fetch function
     const debouncedFetchExercises = useMemo(
       () =>
         debounce(async (searchTerm: string, muscleGroup: string | null) => {
-          await fetchExercises(searchTerm, muscleGroup);
+          await fetchExercises(searchTerm, muscleGroup)
         }, 300), // 300ms debounce as per requirements
       [fetchExercises]
-    );
+    )
 
     useEffect(() => {
-      debouncedFetchExercises(search, selectedGroup);
-    }, [search, selectedGroup, debouncedFetchExercises]);
+      debouncedFetchExercises(search, selectedGroup)
+    }, [search, selectedGroup, debouncedFetchExercises])
 
     const clearFilters = useCallback(() => {
-      setSearch("");
-      setSelectedGroup(null);
-    }, []);
+      setSearch('')
+      setSelectedGroup(null)
+    }, [])
 
     const handleExerciseToggle = useCallback(
       (exercise: Exercise) => {
         if (selectedExerciseIds.has(exercise.id)) {
-          onExerciseRemove(exercise.id);
+          onExerciseRemove(exercise.id)
         } else {
-          onExerciseAdd(exercise);
+          onExerciseAdd(exercise)
         }
       },
       [selectedExerciseIds, onExerciseAdd, onExerciseRemove]
-    );
+    )
 
     const handleReorderExercise = useCallback(
-      (exerciseId: string, direction: "up" | "down") => {
-        const currentIndex = selectedExercises.findIndex(
-          (ex) => ex.exerciseId === exerciseId
-        );
-        if (currentIndex === -1) return;
+      (exerciseId: string, direction: 'up' | 'down') => {
+        const currentIndex = selectedExercises.findIndex(ex => ex.exerciseId === exerciseId)
+        if (currentIndex === -1) return
 
-        const newExercises = [...selectedExercises];
-        const targetIndex =
-          direction === "up" ? currentIndex - 1 : currentIndex + 1;
+        const newExercises = [...selectedExercises]
+        const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
 
-        if (targetIndex < 0 || targetIndex >= newExercises.length) return;
+        if (targetIndex < 0 || targetIndex >= newExercises.length) return
 
         // Swap exercises
-        [newExercises[currentIndex], newExercises[targetIndex]] = [
+        ;[newExercises[currentIndex], newExercises[targetIndex]] = [
           newExercises[targetIndex],
           newExercises[currentIndex],
-        ];
+        ]
 
         // Update order indices
         newExercises.forEach((exercise, index) => {
-          exercise.orderIndex = index + 1;
-        });
+          exercise.orderIndex = index + 1
+        })
 
-        onExerciseReorder(newExercises);
+        onExerciseReorder(newExercises)
       },
       [selectedExercises, onExerciseReorder]
-    );
+    )
 
     // Optimization functions for FlatList performance
-    const keyExtractor = useCallback((item: Exercise) => item.id, []);
-    const selectedKeyExtractor = useCallback(
-      (item: WorkoutExerciseConfig) => item.exerciseId,
-      []
-    );
+    const keyExtractor = useCallback((item: Exercise) => item.id, [])
+    const selectedKeyExtractor = useCallback((item: WorkoutExerciseConfig) => item.exerciseId, [])
 
     const getItemLayout = useCallback(
       (_: any, index: number) => ({
@@ -174,7 +155,7 @@ const ExerciseSelectionStep = memo(
         index,
       }),
       []
-    );
+    )
 
     const getSelectedItemLayout = useCallback(
       (_: any, index: number) => ({
@@ -183,23 +164,19 @@ const ExerciseSelectionStep = memo(
         index,
       }),
       []
-    );
+    )
 
     // Memoized render functions for better performance
     const renderExerciseItem = useCallback(
       ({ item }: { item: Exercise }) => {
-        const isSelected = selectedExerciseIds.has(item.id);
+        const isSelected = selectedExerciseIds.has(item.id)
 
         return (
-          <ExerciseItem
-            exercise={item}
-            isSelected={isSelected}
-            onToggle={handleExerciseToggle}
-          />
-        );
+          <ExerciseItem exercise={item} isSelected={isSelected} onToggle={handleExerciseToggle} />
+        )
       },
       [selectedExerciseIds, handleExerciseToggle]
-    );
+    )
 
     const renderSelectedExerciseItem = useCallback(
       ({ item, index }: { item: WorkoutExerciseConfig; index: number }) => {
@@ -211,10 +188,10 @@ const ExerciseSelectionStep = memo(
             onReorder={handleReorderExercise}
             onRemove={onExerciseRemove}
           />
-        );
+        )
       },
       [selectedExercises.length, handleReorderExercise, onExerciseRemove]
-    );
+    )
 
     return (
       <ThemedView style={styles.container}>
@@ -267,14 +244,12 @@ const ExerciseSelectionStep = memo(
             style={styles.muscleGroupsContainer}
             accessibilityLabel="Filtros por grupo muscular"
           >
-            {MUSCLE_GROUPS.map((group) => (
+            {MUSCLE_GROUPS.map(group => (
               <Button
                 key={group}
                 title={group}
-                variant={selectedGroup === group ? "contained" : "outlined"}
-                onPress={() =>
-                  setSelectedGroup(group === selectedGroup ? null : group)
-                }
+                variant={selectedGroup === group ? 'contained' : 'outlined'}
+                onPress={() => setSelectedGroup(group === selectedGroup ? null : group)}
                 style={[
                   styles.muscleGroupButton,
                   selectedGroup === group && styles.selectedMuscleGroupButton,
@@ -295,9 +270,7 @@ const ExerciseSelectionStep = memo(
           {loading && (
             <View style={styles.loadingContainer}>
               <Loading />
-              <ThemedText style={styles.loadingText}>
-                Carregando exercícios...
-              </ThemedText>
+              <ThemedText style={styles.loadingText}>Carregando exercícios...</ThemedText>
             </View>
           )}
 
@@ -317,8 +290,8 @@ const ExerciseSelectionStep = memo(
             <View style={styles.emptyContainer}>
               <ThemedText style={styles.emptyText}>
                 {search || selectedGroup
-                  ? "Nenhum exercício encontrado com os filtros aplicados."
-                  : "Nenhum exercício disponível."}
+                  ? 'Nenhum exercício encontrado com os filtros aplicados.'
+                  : 'Nenhum exercício disponível.'}
               </ThemedText>
             </View>
           )}
@@ -341,11 +314,11 @@ const ExerciseSelectionStep = memo(
           )}
         </View>
       </ThemedView>
-    );
+    )
   }
-);
+)
 
-ExerciseSelectionStep.displayName = "ExerciseSelectionStep";
+ExerciseSelectionStep.displayName = 'ExerciseSelectionStep'
 
 // Memoized sub-components for better performance
 const ExerciseItem = memo(
@@ -354,22 +327,18 @@ const ExerciseItem = memo(
     isSelected,
     onToggle,
   }: {
-    exercise: Exercise;
-    isSelected: boolean;
-    onToggle: (exercise: Exercise) => void;
+    exercise: Exercise
+    isSelected: boolean
+    onToggle: (exercise: Exercise) => void
   }) => (
     <TouchableOpacity
       onPress={() => onToggle(exercise)}
       accessible
       accessibilityRole="button"
-      accessibilityLabel={`${isSelected ? "Remover" : "Adicionar"} exercício ${
-        exercise.name
-      }`}
+      accessibilityLabel={`${isSelected ? 'Remover' : 'Adicionar'} exercício ${exercise.name}`}
       accessibilityHint={`Exercício para ${exercise.muscle_group}`}
     >
-      <Card
-        style={[styles.exerciseCard, isSelected && styles.selectedExerciseCard]}
-      >
+      <Card style={[styles.exerciseCard, isSelected && styles.selectedExerciseCard]}>
         {exercise.thumbnail_url ? (
           <LazyImage
             source={{ uri: exercise.thumbnail_url }}
@@ -387,9 +356,7 @@ const ExerciseItem = memo(
           >
             {exercise.name}
           </ThemedText>
-          <ThemedText
-            style={[styles.muscleGroup, isSelected && styles.selectedText]}
-          >
+          <ThemedText style={[styles.muscleGroup, isSelected && styles.selectedText]}>
             {exercise.muscle_group}
           </ThemedText>
         </View>
@@ -403,9 +370,9 @@ const ExerciseItem = memo(
       </Card>
     </TouchableOpacity>
   )
-);
+)
 
-ExerciseItem.displayName = "ExerciseItem";
+ExerciseItem.displayName = 'ExerciseItem'
 
 const SelectedExerciseItem = memo(
   ({
@@ -415,11 +382,11 @@ const SelectedExerciseItem = memo(
     onReorder,
     onRemove,
   }: {
-    item: WorkoutExerciseConfig;
-    index: number;
-    totalCount: number;
-    onReorder: (exerciseId: string, direction: "up" | "down") => void;
-    onRemove: (exerciseId: string) => void;
+    item: WorkoutExerciseConfig
+    index: number
+    totalCount: number
+    onReorder: (exerciseId: string, direction: 'up' | 'down') => void
+    onRemove: (exerciseId: string) => void
   }) => (
     <Card style={styles.selectedExercisePreview}>
       <View style={styles.selectedExerciseHeader}>
@@ -446,7 +413,7 @@ const SelectedExerciseItem = memo(
 
         <View style={styles.reorderButtons}>
           <TouchableOpacity
-            onPress={() => onReorder(item.exerciseId, "up")}
+            onPress={() => onReorder(item.exerciseId, 'up')}
             disabled={index === 0}
             style={[styles.reorderButton, index === 0 && styles.disabledButton]}
             accessible
@@ -455,22 +422,16 @@ const SelectedExerciseItem = memo(
             accessibilityHint="Move o exercício uma posição acima na lista"
           >
             <ThemedText
-              style={[
-                styles.reorderButtonText,
-                index === 0 && styles.disabledButtonText,
-              ]}
+              style={[styles.reorderButtonText, index === 0 && styles.disabledButtonText]}
             >
               ↑
             </ThemedText>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => onReorder(item.exerciseId, "down")}
+            onPress={() => onReorder(item.exerciseId, 'down')}
             disabled={index === totalCount - 1}
-            style={[
-              styles.reorderButton,
-              index === totalCount - 1 && styles.disabledButton,
-            ]}
+            style={[styles.reorderButton, index === totalCount - 1 && styles.disabledButton]}
             accessible
             accessibilityRole="button"
             accessibilityLabel={`Mover ${item.exercise.name} para baixo`}
@@ -500,11 +461,11 @@ const SelectedExerciseItem = memo(
       </View>
     </Card>
   )
-);
+)
 
-SelectedExerciseItem.displayName = "SelectedExerciseItem";
+SelectedExerciseItem.displayName = 'SelectedExerciseItem'
 
-export default ExerciseSelectionStep;
+export default ExerciseSelectionStep
 
 const styles = StyleSheet.create({
   container: {
@@ -516,7 +477,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginBottom: 12,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   selectedList: {
     maxHeight: 200,
@@ -526,13 +487,13 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   selectedExerciseHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   selectedExerciseInfo: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
   },
   smallThumbnail: {
@@ -543,60 +504,60 @@ const styles = StyleSheet.create({
   },
   selectedExerciseName: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   selectedExerciseMuscle: {
     fontSize: 12,
     opacity: 0.7,
   },
   reorderButtons: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   reorderButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginLeft: 4,
     minWidth: 44, // Accessibility touch target
     minHeight: 44,
   },
   disabledButton: {
-    backgroundColor: "#e0e0e0",
+    backgroundColor: '#e0e0e0',
     opacity: 0.5,
   },
   reorderButtonText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   disabledButtonText: {
-    color: "#999",
+    color: '#999',
   },
   removeButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#ff4444",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#ff4444',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginLeft: 8,
     minWidth: 44, // Accessibility touch target
     minHeight: 44,
   },
   removeButtonText: {
-    color: "white",
+    color: 'white',
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   filtersSection: {
     marginBottom: 24,
   },
   searchRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     marginBottom: 12,
   },
   searchInput: {
@@ -615,7 +576,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   selectedMuscleGroupButton: {
-    backgroundColor: "#2563eb",
+    backgroundColor: '#2563eb',
   },
   exerciseListSection: {
     flex: 1,
@@ -624,15 +585,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   exerciseCard: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
     padding: 12,
     minHeight: 72, // Accessibility touch target
   },
   selectedExerciseCard: {
-    backgroundColor: "#e3f2fd",
-    borderColor: "#2196f3",
+    backgroundColor: '#e3f2fd',
+    borderColor: '#2196f3',
     borderWidth: 2,
   },
   thumbnail: {
@@ -652,30 +613,30 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   selectedText: {
-    color: "#1976d2",
-    fontWeight: "500",
+    color: '#1976d2',
+    fontWeight: '500',
   },
   selectionIndicator: {
     width: 32,
     height: 32,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   checkmark: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#4caf50",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#4caf50',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   checkmarkText: {
-    color: "white",
+    color: 'white',
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   loadingContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     padding: 32,
   },
   loadingText: {
@@ -683,23 +644,23 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   errorContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     padding: 32,
   },
   errorText: {
-    color: "#f44336",
-    textAlign: "center",
+    color: '#f44336',
+    textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
     paddingHorizontal: 24,
   },
   emptyContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     padding: 32,
   },
   emptyText: {
-    textAlign: "center",
+    textAlign: 'center',
     opacity: 0.7,
   },
-});
+})

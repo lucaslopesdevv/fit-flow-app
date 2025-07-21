@@ -13,65 +13,67 @@ interface LazyImageProps {
   resizeMode?: 'cover' | 'contain' | 'stretch' | 'repeat' | 'center'
 }
 
-const LazyImage = memo(({
-  source,
-  style,
-  placeholder,
-  fallback,
-  onLoad,
-  onError,
-  accessibilityLabel,
-  resizeMode = 'cover'
-}: LazyImageProps) => {
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
-  const [imageLoaded, setImageLoaded] = useState(false)
+const LazyImage = memo(
+  ({
+    source,
+    style,
+    placeholder,
+    fallback,
+    onLoad,
+    onError,
+    accessibilityLabel,
+    resizeMode = 'cover',
+  }: LazyImageProps) => {
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(false)
+    const [imageLoaded, setImageLoaded] = useState(false)
 
-  const cacheKey = cacheUtils.getImageCacheKey(source.uri)
+    const cacheKey = cacheUtils.getImageCacheKey(source.uri)
 
-  useEffect(() => {
-    // Check if image is already cached
-    const cachedImage = imageCache.get<boolean>(cacheKey)
-    if (cachedImage) {
-      setLoading(false)
-      setImageLoaded(true)
-      return
-    }
-
-    // For React Native, we'll use the Image component's onLoad/onError directly
-    // This is a simplified approach that still provides lazy loading benefits
-    setLoading(true)
-    setError(false)
-  }, [source.uri, cacheKey])
-
-  if (error && fallback) {
-    return <View style={style}>{fallback}</View>
-  }
-
-  if (loading && placeholder) {
-    return <View style={style}>{placeholder}</View>
-  }
-
-  return (
-    <Image
-      source={source}
-      style={style}
-      resizeMode={resizeMode}
-      accessibilityLabel={accessibilityLabel}
-      onLoad={() => {
-        imageCache.set(cacheKey, true, 30 * 60 * 1000) // Cache for 30 minutes
+    useEffect(() => {
+      // Check if image is already cached
+      const cachedImage = imageCache.get<boolean>(cacheKey)
+      if (cachedImage) {
         setLoading(false)
         setImageLoaded(true)
-        onLoad?.()
-      }}
-      onError={() => {
-        setLoading(false)
-        setError(true)
-        onError?.()
-      }}
-    />
-  )
-})
+        return
+      }
+
+      // For React Native, we'll use the Image component's onLoad/onError directly
+      // This is a simplified approach that still provides lazy loading benefits
+      setLoading(true)
+      setError(false)
+    }, [source.uri, cacheKey])
+
+    if (error && fallback) {
+      return <View style={style}>{fallback}</View>
+    }
+
+    if (loading && placeholder) {
+      return <View style={style}>{placeholder}</View>
+    }
+
+    return (
+      <Image
+        source={source}
+        style={style}
+        resizeMode={resizeMode}
+        accessibilityLabel={accessibilityLabel}
+        onLoad={() => {
+          imageCache.set(cacheKey, true, 30 * 60 * 1000) // Cache for 30 minutes
+          setLoading(false)
+          setImageLoaded(true)
+          onLoad?.()
+        }}
+        onError={() => {
+          setLoading(false)
+          setError(true)
+          onError?.()
+        }}
+      />
+    )
+  }
+)
 
 LazyImage.displayName = 'LazyImage'
 
@@ -97,5 +99,5 @@ const styles = StyleSheet.create({
     height: '60%',
     backgroundColor: '#e0e0e0',
     borderRadius: 4,
-  }
+  },
 })

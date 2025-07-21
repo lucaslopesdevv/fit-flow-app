@@ -100,7 +100,7 @@ describe('ExerciseConfigurationStep', () => {
 
     // Simulate calling the update function
     onExerciseUpdate('exercise-1', { sets: 5 })
-    
+
     expect(onExerciseUpdate).toHaveBeenCalledWith('exercise-1', { sets: 5 })
   })
 
@@ -110,7 +110,7 @@ describe('ExerciseConfigurationStep', () => {
 
     // Simulate validation change
     onValidationChange(true)
-    
+
     expect(onValidationChange).toHaveBeenCalledWith(true)
   })
 
@@ -142,7 +142,10 @@ describe('ExerciseConfigurationStep', () => {
       return { isValid: true }
     }
 
-    expect(validateSets(0)).toEqual({ isValid: false, error: 'Séries deve ser um número maior que 0' })
+    expect(validateSets(0)).toEqual({
+      isValid: false,
+      error: 'Séries deve ser um número maior que 0',
+    })
     expect(validateSets(3)).toEqual({ isValid: true })
     expect(validateSets(21)).toEqual({ isValid: false, error: 'Máximo de 20 séries permitidas' })
   })
@@ -161,7 +164,10 @@ describe('ExerciseConfigurationStep', () => {
 
     expect(validateReps('')).toEqual({ isValid: false, error: 'Repetições é obrigatório' })
     expect(validateReps('10-12')).toEqual({ isValid: true })
-    expect(validateReps('a'.repeat(21))).toEqual({ isValid: false, error: 'Máximo de 20 caracteres' })
+    expect(validateReps('a'.repeat(21))).toEqual({
+      isValid: false,
+      error: 'Máximo de 20 caracteres',
+    })
   })
 
   it('should validate rest seconds correctly', () => {
@@ -176,8 +182,14 @@ describe('ExerciseConfigurationStep', () => {
       return { isValid: true }
     }
 
-    expect(validateRestSeconds(-1)).toEqual({ isValid: false, error: 'Descanso deve ser um número maior ou igual a 0' })
+    expect(validateRestSeconds(-1)).toEqual({
+      isValid: false,
+      error: 'Descanso deve ser um número maior ou igual a 0',
+    })
     expect(validateRestSeconds(60)).toEqual({ isValid: true })
-    expect(validateRestSeconds(601)).toEqual({ isValid: false, error: 'Máximo de 10 minutos (600 segundos)' })
+    expect(validateRestSeconds(601)).toEqual({
+      isValid: false,
+      error: 'Máximo de 10 minutos (600 segundos)',
+    })
   })
 })

@@ -30,17 +30,17 @@ jest.mock('@/services/supabase/supabase', () => ({
     auth: {
       getSession: jest.fn(),
       onAuthStateChange: jest.fn(() => ({
-        data: { subscription: { unsubscribe: jest.fn() } }
+        data: { subscription: { unsubscribe: jest.fn() } },
       })),
     },
     from: jest.fn(() => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
-          single: jest.fn()
-        }))
-      }))
-    }))
-  }
+          single: jest.fn(),
+        })),
+      })),
+    })),
+  },
 }))
 
 describe('Role-Based Navigation Integration Tests', () => {
@@ -54,7 +54,7 @@ describe('Role-Based Navigation Integration Tests', () => {
         user: {
           id: 'instructor-123',
           email: 'instructor@test.com',
-          role: 'instructor'
+          role: 'instructor',
         },
         loading: false,
         error: null,
@@ -63,7 +63,7 @@ describe('Role-Based Navigation Integration Tests', () => {
         refreshRole: jest.fn(),
         refreshUser: jest.fn(),
         clearError: jest.fn(),
-        isSessionExpired: false
+        isSessionExpired: false,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockInstructorAuth)
@@ -77,7 +77,7 @@ describe('Role-Based Navigation Integration Tests', () => {
         '/(tabs)/(instructor)/students',
         '/(tabs)/(instructor)/exercises',
         '/(tabs)/(instructor)/notifications',
-        '/(tabs)/(instructor)/profile'
+        '/(tabs)/(instructor)/profile',
       ]
 
       instructorPaths.forEach(path => {
@@ -90,19 +90,16 @@ describe('Role-Based Navigation Integration Tests', () => {
         user: {
           id: 'instructor-123',
           email: 'instructor@test.com',
-          role: 'instructor'
+          role: 'instructor',
         },
         loading: false,
-        error: null
+        error: null,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockInstructorAuth)
 
       // Student-only routes that instructors should not access
-      const studentOnlyPaths = [
-        '/(tabs)/(student)/index',
-        '/(tabs)/(student)/workouts',
-      ]
+      const studentOnlyPaths = ['/(tabs)/(student)/index', '/(tabs)/(student)/workouts']
 
       // Verify instructor role prevents access to student routes
       expect(mockInstructorAuth.user?.role).not.toBe('student')
@@ -119,7 +116,7 @@ describe('Role-Based Navigation Integration Tests', () => {
         user: {
           id: 'student-123',
           email: 'student@test.com',
-          role: 'student'
+          role: 'student',
         },
         loading: false,
         error: null,
@@ -128,7 +125,7 @@ describe('Role-Based Navigation Integration Tests', () => {
         refreshRole: jest.fn(),
         refreshUser: jest.fn(),
         clearError: jest.fn(),
-        isSessionExpired: false
+        isSessionExpired: false,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockStudentAuth)
@@ -142,7 +139,7 @@ describe('Role-Based Navigation Integration Tests', () => {
         '/(tabs)/(student)/workouts',
         '/(tabs)/(student)/exercises',
         '/(tabs)/(student)/notifications',
-        '/(tabs)/(student)/profile'
+        '/(tabs)/(student)/profile',
       ]
 
       studentPaths.forEach(path => {
@@ -155,19 +152,16 @@ describe('Role-Based Navigation Integration Tests', () => {
         user: {
           id: 'student-123',
           email: 'student@test.com',
-          role: 'student'
+          role: 'student',
         },
         loading: false,
-        error: null
+        error: null,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockStudentAuth)
 
       // Instructor-only routes that students should not access
-      const instructorOnlyPaths = [
-        '/(tabs)/(instructor)/students',
-        '/(tabs)/(instructor)/home',
-      ]
+      const instructorOnlyPaths = ['/(tabs)/(instructor)/students', '/(tabs)/(instructor)/home']
 
       // Verify student role prevents access to instructor routes
       expect(mockStudentAuth.user?.role).not.toBe('instructor')
@@ -184,10 +178,10 @@ describe('Role-Based Navigation Integration Tests', () => {
         user: {
           id: 'admin-123',
           email: 'admin@test.com',
-          role: 'admin'
+          role: 'admin',
         },
         loading: false,
-        error: null
+        error: null,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockAdminAuth)
@@ -206,7 +200,7 @@ describe('Role-Based Navigation Integration Tests', () => {
       const mockUnauthenticatedAuth = {
         user: null,
         loading: false,
-        error: null
+        error: null,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockUnauthenticatedAuth)
@@ -223,7 +217,7 @@ describe('Role-Based Navigation Integration Tests', () => {
       const mockLoadingAuth = {
         user: null,
         loading: true,
-        error: null
+        error: null,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockLoadingAuth)
@@ -240,10 +234,10 @@ describe('Role-Based Navigation Integration Tests', () => {
         user: {
           id: 'unknown-123',
           email: 'unknown@test.com',
-          role: 'unknown'
+          role: 'unknown',
         },
         loading: false,
-        error: null
+        error: null,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockUnknownRoleAuth)
@@ -257,7 +251,7 @@ describe('Role-Based Navigation Integration Tests', () => {
       const mockErrorAuth = {
         user: null,
         loading: false,
-        error: 'Authentication failed'
+        error: 'Authentication failed',
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockErrorAuth)
@@ -272,11 +266,11 @@ describe('Role-Based Navigation Integration Tests', () => {
         user: {
           id: 'user-123',
           email: 'user@test.com',
-          role: 'student'
+          role: 'student',
         },
         loading: false,
         error: null,
-        isSessionExpired: true
+        isSessionExpired: true,
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockExpiredAuth)
@@ -292,11 +286,11 @@ describe('Role-Based Navigation Integration Tests', () => {
         user: {
           id: 'user-123',
           email: 'user@test.com',
-          role: 'student'
+          role: 'student',
         },
         loading: false,
         error: null,
-        refreshRole: jest.fn()
+        refreshRole: jest.fn(),
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockAuth)
@@ -317,12 +311,12 @@ describe('Role-Based Navigation Integration Tests', () => {
         user: {
           id: 'user-123',
           email: 'user@test.com',
-          role: 'student'
+          role: 'student',
         },
         loading: false,
         error: null,
         refreshUser: jest.fn(),
-        refreshRole: jest.fn()
+        refreshRole: jest.fn(),
       }
 
       ;(useAuth as jest.Mock).mockReturnValue(mockAuth)

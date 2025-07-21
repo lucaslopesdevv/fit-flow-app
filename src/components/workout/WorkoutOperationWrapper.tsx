@@ -2,7 +2,11 @@ import React, { ReactNode } from 'react'
 import { View, StyleSheet } from 'react-native'
 import { WorkoutErrorBoundary } from './WorkoutErrorBoundary'
 import { WorkoutLoading, WorkoutSavingIndicator } from './WorkoutLoadingStates'
-import { WorkoutErrorMessage, NetworkErrorFallback, EmptyStateFallback } from './WorkoutErrorMessages'
+import {
+  WorkoutErrorMessage,
+  NetworkErrorFallback,
+  EmptyStateFallback,
+} from './WorkoutErrorMessages'
 import { WorkoutError } from '@/services/api/WorkoutService'
 
 interface WorkoutOperationWrapperProps {
@@ -34,9 +38,8 @@ export function WorkoutOperationWrapper({
   onRetry,
   onErrorDismiss,
   showSavingIndicator = false,
-  fallbackMessage
+  fallbackMessage,
 }: WorkoutOperationWrapperProps) {
-  
   // Show loading state
   if (loading) {
     return (
@@ -52,11 +55,7 @@ export function WorkoutOperationWrapper({
     return (
       <WorkoutErrorBoundary onRetry={onRetry} fallbackMessage={fallbackMessage}>
         <View style={styles.container}>
-          <WorkoutErrorMessage
-            error={error}
-            onRetry={onRetry}
-            onDismiss={onErrorDismiss}
-          />
+          <WorkoutErrorMessage error={error} onRetry={onRetry} onDismiss={onErrorDismiss} />
         </View>
       </WorkoutErrorBoundary>
     )
@@ -104,7 +103,7 @@ export function WorkoutListWrapper({
   workouts = [],
   onRetry,
   onCreateWorkout,
-  userRole = 'student'
+  userRole = 'student',
 }: WorkoutListWrapperProps) {
   const isEmpty = !loading && !error && workouts.length === 0
 
@@ -114,14 +113,14 @@ export function WorkoutListWrapper({
         title: 'Nenhum treino criado',
         message: 'Comece criando seu primeiro treino para seus alunos.',
         actionTitle: 'Criar Treino',
-        onAction: onCreateWorkout
+        onAction: onCreateWorkout,
       }
     } else {
       return {
         title: 'Nenhum treino disponível',
         message: 'Seu instrutor ainda não criou treinos para você.',
         actionTitle: undefined,
-        onAction: undefined
+        onAction: undefined,
       }
     }
   }
@@ -159,7 +158,7 @@ export function WorkoutFormWrapper({
   saving = false,
   error = null,
   onRetry,
-  onErrorDismiss
+  onErrorDismiss,
 }: WorkoutFormWrapperProps) {
   return (
     <WorkoutOperationWrapper

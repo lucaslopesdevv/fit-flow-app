@@ -1,11 +1,5 @@
 import { supabase } from '../supabase/supabase'
-import { 
-  Workout, 
-  WorkoutExercise, 
-  Exercise, 
-  Profile,
-  Database 
-} from '@/types/database'
+import { Workout, WorkoutExercise, Exercise, Profile, Database } from '@/types/database'
 import { withTimeout, TimeoutOptions } from '@/utils/timeoutHandler'
 
 // Extended types for workout operations
@@ -46,7 +40,7 @@ export enum WorkoutErrorType {
   VALIDATION_ERROR = 'validation_error',
   NETWORK_ERROR = 'network_error',
   PERMISSION_ERROR = 'permission_error',
-  NOT_FOUND_ERROR = 'not_found_error'
+  NOT_FOUND_ERROR = 'not_found_error',
 }
 
 export class WorkoutError extends Error {
@@ -71,14 +65,11 @@ export class WorkoutService {
     workoutData: CreateWorkoutRequest,
     timeoutOptions?: TimeoutOptions
   ): Promise<WorkoutWithExercises> {
-    return withTimeout(
-      this.executeCreateWorkout(instructorId, workoutData),
-      {
-        timeout: this.DEFAULT_TIMEOUT,
-        timeoutMessage: 'Tempo limite para criar treino excedido. Tente novamente.',
-        ...timeoutOptions
-      }
-    )
+    return withTimeout(this.executeCreateWorkout(instructorId, workoutData), {
+      timeout: this.DEFAULT_TIMEOUT,
+      timeoutMessage: 'Tempo limite para criar treino excedido. Tente novamente.',
+      ...timeoutOptions,
+    })
   }
 
   private static async executeCreateWorkout(
@@ -88,7 +79,7 @@ export class WorkoutService {
     try {
       // Validate input data
       this.validateCreateWorkoutRequest(workoutData)
-      
+
       // Verify instructor has permission to create workout for this student
       await this.verifyInstructorStudentRelation(instructorId, workoutData.studentId)
 
@@ -99,7 +90,7 @@ export class WorkoutService {
           name: workoutData.name,
           description: workoutData.description,
           student_id: workoutData.studentId,
-          instructor_id: instructorId
+          instructor_id: instructorId,
         })
         .select()
         .single()
@@ -120,7 +111,7 @@ export class WorkoutService {
           reps: exercise.reps,
           rest_seconds: exercise.restSeconds,
           order_index: exercise.orderIndex,
-          notes: exercise.notes
+          notes: exercise.notes,
         }))
 
         const { error: exercisesError } = await supabase
@@ -141,7 +132,7 @@ export class WorkoutService {
       await this.logAuditEvent('create', workout.id, instructorId, {
         workoutName: workoutData.name,
         studentId: workoutData.studentId,
-        exerciseCount: workoutData.exercises.length
+        exerciseCount: workoutData.exercises.length,
       })
 
       // Return the complete workout with exercises
@@ -197,10 +188,12 @@ export class WorkoutService {
       // Fetch workout exercises
       const { data: workoutExercises, error: exercisesError } = await supabase
         .from('workout_exercises')
-        .select(`
+        .select(
+          `
           *,
           exercise:exercises(*)
-        `)
+        `
+        )
         .in('workout_id', workoutIds)
         .order('order_index')
 
@@ -216,8 +209,8 @@ export class WorkoutService {
           .filter(we => we.workout_id === workout.id)
           .map(we => ({
             ...we,
-            exercise: we.exercise
-          }))
+            exercise: we.exercise,
+          })),
       }))
 
       return data.map(this.transformWorkoutData)
@@ -272,10 +265,12 @@ export class WorkoutService {
       // Fetch workout exercises
       const { data: workoutExercises, error: exercisesError } = await supabase
         .from('workout_exercises')
-        .select(`
+        .select(
+          `
           *,
           exercise:exercises(*)
-        `)
+        `
+        )
         .in('workout_id', workoutIds)
         .order('order_index')
 
@@ -291,8 +286,8 @@ export class WorkoutService {
           .filter(we => we.workout_id === workout.id)
           .map(we => ({
             ...we,
-            exercise: we.exercise
-          }))
+            exercise: we.exercise,
+          })),
       }))
 
       return data.map(this.transformWorkoutData)
@@ -321,10 +316,7 @@ export class WorkoutService {
 
       if (workoutError) {
         if (workoutError.code === 'PGRST116') {
-          throw new WorkoutError(
-            WorkoutErrorType.NOT_FOUND_ERROR,
-            'Workout not found'
-          )
+          throw new WorkoutError(WorkoutErrorType.NOT_FOUND_ERROR, 'Workout not found')
         }
         throw new WorkoutError(
           WorkoutErrorType.NETWORK_ERROR,
@@ -349,10 +341,12 @@ export class WorkoutService {
       // Get workout exercises
       const { data: workoutExercises } = await supabase
         .from('workout_exercises')
-        .select(`
+        .select(
+          `
           *,
           exercise:exercises(*)
-        `)
+        `
+        )
         .eq('workout_id', workoutId)
         .order('order_index')
 
@@ -362,8 +356,8 @@ export class WorkoutService {
         instructor: instructor || null,
         exercises: (workoutExercises || []).map(we => ({
           ...we,
-          exercise: we.exercise
-        }))
+          exercise: we.exercise,
+        })),
       }
 
       return this.transformWorkoutData(data)
@@ -397,7 +391,7 @@ export class WorkoutService {
           .update({
             name: updateData.name,
             description: updateData.description,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .eq('id', workoutId)
 
@@ -433,7 +427,7 @@ export class WorkoutService {
             reps: exercise.reps,
             rest_seconds: exercise.restSeconds,
             order_index: exercise.orderIndex,
-            notes: exercise.notes
+            notes: exercise.notes,
           }))
 
           const { error: insertError } = await supabase
@@ -452,7 +446,7 @@ export class WorkoutService {
       // Log audit event
       await this.logAuditEvent('update', workoutId, instructorId, {
         updatedFields: Object.keys(updateData),
-        exerciseCount: updateData.exercises?.length
+        exerciseCount: updateData.exercises?.length,
       })
 
       return await this.getWorkoutDetails(workoutId)
@@ -489,10 +483,7 @@ export class WorkoutService {
       }
 
       // Delete the workout
-      const { error: workoutError } = await supabase
-        .from('workouts')
-        .delete()
-        .eq('id', workoutId)
+      const { error: workoutError } = await supabase.from('workouts').delete().eq('id', workoutId)
 
       if (workoutError) {
         throw new WorkoutError(
@@ -529,14 +520,16 @@ export class WorkoutService {
     try {
       let query = supabase
         .from('workouts')
-        .select(`
+        .select(
+          `
           *,
           student:profiles!workouts_student_id_fkey(id, full_name, email, avatar_url),
           workout_exercises(
             *,
             exercise:exercises(*)
           )
-        `)
+        `
+        )
         .eq('instructor_id', instructorId)
         .order('created_at', { ascending: false })
 
@@ -607,7 +600,7 @@ export class WorkoutService {
       // Get recent workouts (last 7 days)
       const sevenDaysAgo = new Date()
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-      
+
       const { count: recentWorkouts } = await supabase
         .from('workouts')
         .select('id', { count: 'exact', head: true })
@@ -623,13 +616,17 @@ export class WorkoutService {
           .eq('instructor_id', instructorId)
 
         if (workoutCounts) {
-          const studentWorkoutCounts = workoutCounts.reduce((acc, workout) => {
-            acc[workout.student_id] = (acc[workout.student_id] || 0) + 1
-            return acc
-          }, {} as Record<string, number>)
+          const studentWorkoutCounts = workoutCounts.reduce(
+            (acc, workout) => {
+              acc[workout.student_id] = (acc[workout.student_id] || 0) + 1
+              return acc
+            },
+            {} as Record<string, number>
+          )
 
-          const mostActiveStudentId = Object.entries(studentWorkoutCounts)
-            .sort(([,a], [,b]) => b - a)[0]?.[0]
+          const mostActiveStudentId = Object.entries(studentWorkoutCounts).sort(
+            ([, a], [, b]) => b - a
+          )[0]?.[0]
 
           if (mostActiveStudentId) {
             const { data: student } = await supabase
@@ -647,14 +644,14 @@ export class WorkoutService {
         totalWorkouts: totalWorkouts || 0,
         totalStudents,
         recentWorkouts: recentWorkouts || 0,
-        mostActiveStudent
+        mostActiveStudent,
       }
     } catch (error) {
       console.warn('Failed to get workout stats:', error)
       return {
         totalWorkouts: 0,
         totalStudents: 0,
-        recentWorkouts: 0
+        recentWorkouts: 0,
       }
     }
   }
@@ -671,7 +668,7 @@ export class WorkoutService {
     try {
       // Get the original workout
       const originalWorkout = await this.getWorkoutDetails(workoutId)
-      
+
       // Verify instructor owns the original workout
       if (originalWorkout.instructor_id !== instructorId) {
         throw new WorkoutError(
@@ -691,8 +688,8 @@ export class WorkoutService {
           reps: we.reps,
           restSeconds: we.rest_seconds,
           orderIndex: we.order_index,
-          notes: we.notes
-        }))
+          notes: we.notes,
+        })),
       }
 
       const duplicatedWorkout = await this.createWorkout(instructorId, duplicateData)
@@ -702,7 +699,7 @@ export class WorkoutService {
         originalWorkoutId: workoutId,
         newWorkoutId: duplicatedWorkout.id,
         newStudentId: newStudentId || originalWorkout.student_id,
-        newName: newName || duplicateData.name
+        newName: newName || duplicateData.name,
       })
 
       return duplicatedWorkout
@@ -736,7 +733,7 @@ export class WorkoutService {
         instructorId,
         details: details || {},
         userAgent: 'FitFlow Mobile App', // In web, you'd get this from navigator.userAgent
-        ip: 'mobile-device' // In web, you'd get the actual IP
+        ip: 'mobile-device', // In web, you'd get the actual IP
       }
 
       console.log('Workout Audit Log:', auditLog)
@@ -753,11 +750,7 @@ export class WorkoutService {
 
   private static validateCreateWorkoutRequest(data: CreateWorkoutRequest): void {
     if (!data.name?.trim()) {
-      throw new WorkoutError(
-        WorkoutErrorType.VALIDATION_ERROR,
-        'Workout name is required',
-        'name'
-      )
+      throw new WorkoutError(WorkoutErrorType.VALIDATION_ERROR, 'Workout name is required', 'name')
     }
 
     if (!data.studentId?.trim()) {
@@ -823,10 +816,7 @@ export class WorkoutService {
       .single()
 
     if (error) {
-      throw new WorkoutError(
-        WorkoutErrorType.NOT_FOUND_ERROR,
-        'Student not found'
-      )
+      throw new WorkoutError(WorkoutErrorType.NOT_FOUND_ERROR, 'Student not found')
     }
 
     if (data.instructor_id !== instructorId) {
@@ -848,10 +838,7 @@ export class WorkoutService {
       .single()
 
     if (error) {
-      throw new WorkoutError(
-        WorkoutErrorType.NOT_FOUND_ERROR,
-        'Workout not found'
-      )
+      throw new WorkoutError(WorkoutErrorType.NOT_FOUND_ERROR, 'Workout not found')
     }
 
     if (data.instructor_id !== instructorId) {
@@ -869,8 +856,8 @@ export class WorkoutService {
         .sort((a: any, b: any) => a.order_index - b.order_index)
         .map((we: any) => ({
           ...we,
-          exercise: we.exercise
-        }))
+          exercise: we.exercise,
+        })),
     }
   }
 }

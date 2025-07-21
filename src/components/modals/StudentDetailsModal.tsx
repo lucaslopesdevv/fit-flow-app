@@ -22,11 +22,11 @@ interface StudentDetailsModalProps {
   student: Profile | null
 }
 
-export function StudentDetailsModal({ 
-  visible, 
-  onClose, 
-  onSuccess, 
-  student 
+export function StudentDetailsModal({
+  visible,
+  onClose,
+  onSuccess,
+  student,
 }: StudentDetailsModalProps) {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
@@ -85,24 +85,20 @@ export function StudentDetailsModal({
       const updates: Partial<Profile> = {
         full_name: fullName.trim(),
         phone: phone.trim() || undefined,
-        is_active: isActive
+        is_active: isActive,
       }
 
       await StudentService.updateStudent(student.id, updates)
-      
-      Alert.alert(
-        'Sucesso!',
-        'Informações do aluno atualizadas com sucesso.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              setIsEditing(false)
-              onSuccess()
-            },
+
+      Alert.alert('Sucesso!', 'Informações do aluno atualizadas com sucesso.', [
+        {
+          text: 'OK',
+          onPress: () => {
+            setIsEditing(false)
+            onSuccess()
           },
-        ]
-      )
+        },
+      ])
     } catch (error: any) {
       console.error('Error updating student:', error)
       setErrors({ general: 'Erro ao atualizar informações. Tente novamente.' })
@@ -116,37 +112,33 @@ export function StudentDetailsModal({
 
     const newActiveState = !isActive
     const action = newActiveState ? 'reativar' : 'desativar'
-    
-    Alert.alert(
-      `Confirmar ${action}`,
-      `Tem certeza que deseja ${action} este aluno?`,
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel'
-        },
-        {
-          text: 'Confirmar',
-          onPress: async () => {
-            setLoading(true)
-            try {
-              await StudentService.updateStudent(student.id, { is_active: newActiveState })
-              setIsActive(newActiveState)
-              Alert.alert(
-                'Sucesso!',
-                `Aluno ${newActiveState ? 'reativado' : 'desativado'} com sucesso.`
-              )
-              onSuccess()
-            } catch (error) {
-              console.error(`Error ${action} student:`, error)
-              Alert.alert('Erro', `Não foi possível ${action} o aluno. Tente novamente.`)
-            } finally {
-              setLoading(false)
-            }
+
+    Alert.alert(`Confirmar ${action}`, `Tem certeza que deseja ${action} este aluno?`, [
+      {
+        text: 'Cancelar',
+        style: 'cancel',
+      },
+      {
+        text: 'Confirmar',
+        onPress: async () => {
+          setLoading(true)
+          try {
+            await StudentService.updateStudent(student.id, { is_active: newActiveState })
+            setIsActive(newActiveState)
+            Alert.alert(
+              'Sucesso!',
+              `Aluno ${newActiveState ? 'reativado' : 'desativado'} com sucesso.`
+            )
+            onSuccess()
+          } catch (error) {
+            console.error(`Error ${action} student:`, error)
+            Alert.alert('Erro', `Não foi possível ${action} o aluno. Tente novamente.`)
+          } finally {
+            setLoading(false)
           }
-        }
-      ]
-    )
+        },
+      },
+    ])
   }
 
   const handleClose = () => {
@@ -173,12 +165,7 @@ export function StudentDetailsModal({
       >
         <View style={styles.header}>
           <ThemedText style={styles.title}>Detalhes do Aluno</ThemedText>
-          <Button
-            title="Fechar"
-            variant="text"
-            onPress={handleClose}
-            disabled={loading}
-          />
+          <Button title="Fechar" variant="text" onPress={handleClose} disabled={loading} />
         </View>
 
         <ScrollView
@@ -189,12 +176,12 @@ export function StudentDetailsModal({
           {/* Student Info Section */}
           <View style={styles.infoSection}>
             <ThemedText style={styles.sectionTitle}>Informações Pessoais</ThemedText>
-            
+
             <View style={styles.infoRow}>
               <ThemedText style={styles.infoLabel}>Email:</ThemedText>
               <ThemedText style={styles.infoValue}>{student.email}</ThemedText>
             </View>
-            
+
             <View style={styles.infoRow}>
               <ThemedText style={styles.infoLabel}>Data de Cadastro:</ThemedText>
               <ThemedText style={styles.infoValue}>
@@ -204,13 +191,10 @@ export function StudentDetailsModal({
 
             <View style={styles.statusContainer}>
               <ThemedText style={styles.infoLabel}>Status:</ThemedText>
-              <View style={[
-                styles.statusBadge, 
-                isActive ? styles.statusActive : styles.statusInactive
-              ]}>
-                <ThemedText style={styles.statusText}>
-                  {isActive ? 'Ativo' : 'Inativo'}
-                </ThemedText>
+              <View
+                style={[styles.statusBadge, isActive ? styles.statusActive : styles.statusInactive]}
+              >
+                <ThemedText style={styles.statusText}>{isActive ? 'Ativo' : 'Inativo'}</ThemedText>
               </View>
             </View>
           </View>
@@ -242,11 +226,7 @@ export function StudentDetailsModal({
                 editable={!loading}
               />
 
-              {errors.general && (
-                <ThemedText style={styles.errorText}>
-                  {errors.general}
-                </ThemedText>
-              )}
+              {errors.general && <ThemedText style={styles.errorText}>{errors.general}</ThemedText>}
 
               <View style={styles.buttonContainer}>
                 <Button
@@ -276,12 +256,10 @@ export function StudentDetailsModal({
                 <ThemedText style={styles.infoLabel}>Nome:</ThemedText>
                 <ThemedText style={styles.infoValue}>{student.full_name}</ThemedText>
               </View>
-              
+
               <View style={styles.infoRow}>
                 <ThemedText style={styles.infoLabel}>Telefone:</ThemedText>
-                <ThemedText style={styles.infoValue}>
-                  {student.phone || 'Não informado'}
-                </ThemedText>
+                <ThemedText style={styles.infoValue}>{student.phone || 'Não informado'}</ThemedText>
               </View>
 
               <Button
@@ -295,9 +273,7 @@ export function StudentDetailsModal({
           {loading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color="#2563eb" />
-              <ThemedText style={styles.loadingText}>
-                Processando...
-              </ThemedText>
+              <ThemedText style={styles.loadingText}>Processando...</ThemedText>
             </View>
           )}
         </ScrollView>
@@ -310,7 +286,7 @@ export function StudentDetailsModal({
             variant="contained"
             style={[
               styles.actionButton,
-              isActive ? { backgroundColor: '#ef4444' } : { backgroundColor: '#22c55e' }
+              isActive ? { backgroundColor: '#ef4444' } : { backgroundColor: '#22c55e' },
             ]}
             fullWidth
           />
