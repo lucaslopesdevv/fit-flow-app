@@ -1,18 +1,24 @@
 import { Tabs } from 'expo-router'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { useTheme } from '@/context/ThemeContext'
 
 export default function StudentTabsLayout() {
   // AuthGate already handles authentication and role checking
   // No need for additional checks here
+  const { theme } = useTheme()
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#6200ee',
-        tabBarInactiveTintColor: '#666',
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.dark ? '#999' : '#666',
+        tabBarStyle: {
+          backgroundColor: theme.colors.background,
+          borderTopColor: theme.dark ? '#333' : '#e0e0e0',
+        },
         headerShown: true,
         headerStyle: {
-          backgroundColor: '#6200ee',
+          backgroundColor: theme.colors.primary,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {

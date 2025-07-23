@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Modal, ScrollView, StyleSheet, Image, Dimensions } from 'react-native'
+import { View, Modal, ScrollView, StyleSheet, Image } from 'react-native'
 import { ThemedText } from '@/components/ThemedText'
 import { Button } from '@/components/common/Button'
 import { Card } from '@/components/common/Card'
@@ -8,8 +8,7 @@ import { WorkoutDetailsModalProps } from '@/types/database'
 import { WorkoutOperationWrapper } from '../workout/WorkoutOperationWrapper'
 import { WorkoutDetailsLoading } from '../workout/WorkoutLoadingStates'
 import { useWorkoutOperations } from '@/hooks/useWorkoutOperations'
-
-const { width: screenWidth } = Dimensions.get('window')
+import { useTheme } from '@/context/ThemeContext'
 
 export default function WorkoutDetailsModal({
   visible,
@@ -18,8 +17,12 @@ export default function WorkoutDetailsModal({
   onClose,
   onStartWorkout,
 }: WorkoutDetailsModalProps) {
+  const { theme } = useTheme()
   const [workout, setWorkout] = useState(initialWorkout)
   const { getWorkoutDetails, loading, error, retry, clearError } = useWorkoutOperations()
+
+  // Create dynamic styles based on theme
+  const styles = React.useMemo(() => createStyles(theme), [theme])
 
   useEffect(() => {
     if (visible && workoutId && !initialWorkout) {
@@ -76,6 +79,10 @@ export default function WorkoutDetailsModal({
         style={styles.exerciseCard}
         variant="outlined"
         padding="medium"
+        accessible={true}
+        accessibilityLabel={`Exercício ${index + 1}: ${exercise.name}`}
+        accessibilityHint={`${sets} séries de ${reps} repetições, ${formatRestTime(rest_seconds)} de descanso${notes ? '. Observações: ' + notes : ''}`}
+        accessibilityRole="summary"
       >
         <View style={styles.exerciseHeader}>
           <View style={styles.exerciseImageContainer}>
@@ -84,11 +91,22 @@ export default function WorkoutDetailsModal({
                 source={{ uri: exercise.thumbnail_url }}
                 style={styles.exerciseThumbnail}
                 resizeMode="cover"
-                accessibilityLabel={`Imagem do exercício ${exercise.name}`}
+                accessible={true}
+                accessibilityLabel={`Imagem demonstrativa do exercício ${exercise.name}`}
+                accessibilityRole="image"
               />
             ) : (
-              <View style={styles.exercisePlaceholder}>
-                <ThemedText style={styles.exercisePlaceholderText}>
+              <View
+                style={styles.exercisePlaceholder}
+                accessible={true}
+                accessibilityLabel={`Ícone do exercício ${exercise.name}`}
+                accessibilityRole="image"
+              >
+                <ThemedText
+                  style={styles.exercisePlaceholderText}
+                  accessibilityElementsHidden={true}
+                  importantForAccessibility="no"
+                >
                   {exercise.name.charAt(0).toUpperCase()}
                 </ThemedText>
               </View>
@@ -102,8 +120,19 @@ export default function WorkoutDetailsModal({
             <ThemedText style={styles.exerciseMuscleGroup}>{exercise.muscle_group}</ThemedText>
           </View>
 
-          <View style={styles.exerciseOrder}>
-            <ThemedText style={styles.exerciseOrderText}>{index + 1}</ThemedText>
+          <View
+            style={styles.exerciseOrder}
+            accessible={true}
+            accessibilityLabel={`Exercício número ${index + 1}`}
+            accessibilityRole="text"
+          >
+            <ThemedText
+              style={styles.exerciseOrderText}
+              accessibilityElementsHidden={true}
+              importantForAccessibility="no"
+            >
+              {index + 1}
+            </ThemedText>
           </View>
         </View>
 
@@ -142,6 +171,9 @@ export default function WorkoutDetailsModal({
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={onClose}
+      accessible={true}
+      accessibilityViewIsModal={true}
+      accessibilityLabel="Detalhes do treino"
     >
       <View style={styles.container}>
         {/* Header */}
@@ -287,217 +319,218 @@ export default function WorkoutDetailsModal({
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-  },
-  headerSpacer: {
-    width: 80, // Same width as close button
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  workoutInfoCard: {
-    marginBottom: 24,
-  },
-  workoutName: {
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  workoutDescription: {
-    color: '#6c757d',
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 20,
-  },
-  workoutMeta: {
-    gap: 16,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  avatar: {
-    backgroundColor: '#2563eb',
-  },
-  metaInfo: {
-    flex: 1,
-  },
-  metaLabel: {
-    fontSize: 12,
-    color: '#6c757d',
-    textTransform: 'uppercase',
-    fontWeight: '600',
-    letterSpacing: 0.5,
-  },
-  metaValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e9ecef',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#2563eb',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#6c757d',
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  exercisesSection: {
-    flex: 1,
-  },
-  sectionTitle: {
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  exerciseCard: {
-    marginBottom: 12,
-  },
-  exerciseHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  exerciseImageContainer: {
-    marginRight: 12,
-  },
-  exerciseThumbnail: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: '#f8f9fa',
-  },
-  exercisePlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: '#e9ecef',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  exercisePlaceholderText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#6c757d',
-  },
-  exerciseInfo: {
-    flex: 1,
-  },
-  exerciseName: {
-    marginBottom: 4,
-  },
-  exerciseMuscleGroup: {
-    fontSize: 14,
-    color: '#6c757d',
-    textTransform: 'capitalize',
-  },
-  exerciseOrder: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#2563eb',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  exerciseOrderText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  exerciseConfig: {
-    gap: 12,
-  },
-  configRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-  },
-  configItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  configLabel: {
-    fontSize: 12,
-    color: '#6c757d',
-    textTransform: 'uppercase',
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  configValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#212529',
-  },
-  notesContainer: {
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#e9ecef',
-  },
-  notesLabel: {
-    fontSize: 12,
-    color: '#6c757d',
-    textTransform: 'uppercase',
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    marginBottom: 6,
-  },
-  notesText: {
-    fontSize: 14,
-    color: '#495057',
-    lineHeight: 20,
-    fontStyle: 'italic',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 32,
-  },
-  emptyStateText: {
-    color: '#6c757d',
-    textAlign: 'center',
-    fontSize: 16,
-  },
-  footer: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#e9ecef',
-  },
-  startButton: {
-    minHeight: 48,
-    backgroundColor: '#28a745',
-  },
-})
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      backgroundColor: theme.colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.outline,
+    },
+    headerTitle: {
+      flex: 1,
+      textAlign: 'center',
+    },
+    headerSpacer: {
+      width: 80, // Same width as close button
+    },
+    content: {
+      flex: 1,
+    },
+    contentContainer: {
+      padding: 16,
+      paddingBottom: 32,
+    },
+    workoutInfoCard: {
+      marginBottom: 24,
+    },
+    workoutName: {
+      marginBottom: 8,
+      textAlign: 'center',
+    },
+    workoutDescription: {
+      color: theme.colors.onSurfaceVariant,
+      textAlign: 'center',
+      marginBottom: 20,
+      lineHeight: 20,
+    },
+    workoutMeta: {
+      gap: 16,
+    },
+    metaRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    avatar: {
+      backgroundColor: theme.colors.primary,
+    },
+    metaInfo: {
+      flex: 1,
+    },
+    metaLabel: {
+      fontSize: 12,
+      color: theme.colors.onSurfaceVariant,
+      textTransform: 'uppercase',
+      fontWeight: '600',
+      letterSpacing: 0.5,
+    },
+    metaValue: {
+      fontSize: 16,
+      fontWeight: '600',
+      marginTop: 2,
+    },
+    statsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      paddingTop: 16,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.outline,
+    },
+    statItem: {
+      alignItems: 'center',
+    },
+    statValue: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: theme.colors.primary,
+    },
+    statLabel: {
+      fontSize: 12,
+      color: theme.colors.onSurfaceVariant,
+      marginTop: 4,
+      textAlign: 'center',
+    },
+    exercisesSection: {
+      flex: 1,
+    },
+    sectionTitle: {
+      marginBottom: 16,
+      paddingHorizontal: 4,
+    },
+    exerciseCard: {
+      marginBottom: 12,
+    },
+    exerciseHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    exerciseImageContainer: {
+      marginRight: 12,
+    },
+    exerciseThumbnail: {
+      width: 60,
+      height: 60,
+      borderRadius: 8,
+      backgroundColor: theme.colors.surfaceVariant,
+    },
+    exercisePlaceholder: {
+      width: 60,
+      height: 60,
+      borderRadius: 8,
+      backgroundColor: theme.colors.surfaceVariant,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    exercisePlaceholderText: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: theme.colors.onSurfaceVariant,
+    },
+    exerciseInfo: {
+      flex: 1,
+    },
+    exerciseName: {
+      marginBottom: 4,
+    },
+    exerciseMuscleGroup: {
+      fontSize: 14,
+      color: theme.colors.onSurfaceVariant,
+      textTransform: 'capitalize',
+    },
+    exerciseOrder: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    exerciseOrderText: {
+      color: '#fff',
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    exerciseConfig: {
+      gap: 12,
+    },
+    configRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 8,
+    },
+    configItem: {
+      alignItems: 'center',
+      flex: 1,
+    },
+    configLabel: {
+      fontSize: 12,
+      color: theme.colors.onSurfaceVariant,
+      textTransform: 'uppercase',
+      fontWeight: '600',
+      letterSpacing: 0.5,
+      marginBottom: 4,
+    },
+    configValue: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.colors.onSurface,
+    },
+    notesContainer: {
+      paddingTop: 12,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.outline,
+    },
+    notesLabel: {
+      fontSize: 12,
+      color: theme.colors.onSurfaceVariant,
+      textTransform: 'uppercase',
+      fontWeight: '600',
+      letterSpacing: 0.5,
+      marginBottom: 6,
+    },
+    notesText: {
+      fontSize: 14,
+      color: theme.colors.onSurface,
+      lineHeight: 20,
+      fontStyle: 'italic',
+    },
+    emptyState: {
+      alignItems: 'center',
+      paddingVertical: 32,
+    },
+    emptyStateText: {
+      color: theme.colors.onSurfaceVariant,
+      textAlign: 'center',
+      fontSize: 16,
+    },
+    footer: {
+      padding: 16,
+      backgroundColor: theme.colors.surface,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.outline,
+    },
+    startButton: {
+      minHeight: 48,
+      backgroundColor: '#28a745',
+    },
+  })

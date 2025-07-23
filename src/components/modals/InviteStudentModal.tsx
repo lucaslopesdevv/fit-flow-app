@@ -7,12 +7,12 @@ import {
   Platform,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from 'react-native'
 import { ThemedText } from '@/components/ThemedText'
 import { Input } from '@/components/common/Input'
 import { Button } from '@/components/common/Button'
 import { StudentService, StudentInvitation } from '@/services/api/StudentService'
-import { ActivityIndicator } from 'react-native'
 
 interface InviteStudentModalProps {
   visible: boolean

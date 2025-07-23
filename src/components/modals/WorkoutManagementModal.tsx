@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { View, Modal, ScrollView, StyleSheet, Alert, RefreshControl, TextInput } from 'react-native'
+import { View, Modal, ScrollView, StyleSheet, Alert, RefreshControl } from 'react-native'
 import { ThemedText } from '@/components/ThemedText'
 import { Button } from '@/components/common/Button'
 import { Card } from '@/components/common/Card'
@@ -232,10 +232,13 @@ export default function WorkoutManagementModal({
   const renderFilters = () => (
     <View style={styles.filtersContainer}>
       <Input
+        label="Buscar treinos"
         placeholder="Buscar treinos..."
         value={filters.search}
         onChangeText={text => updateFilter('search', text)}
         style={styles.searchInput}
+        accessibilityLabel="Campo de busca de treinos"
+        accessibilityHint="Digite para filtrar treinos por nome, descrição ou aluno"
       />
 
       <View style={styles.filterRow}>
@@ -260,6 +263,9 @@ export default function WorkoutManagementModal({
                 ])
               }}
               style={styles.filterButton}
+              accessibilityLabel="Filtrar por aluno"
+              accessibilityHint="Toque para selecionar um aluno específico ou todos os alunos"
+              accessibilityRole="button"
             />
           </View>
         </View>
@@ -355,6 +361,9 @@ export default function WorkoutManagementModal({
         animationType="slide"
         presentationStyle="pageSheet"
         onRequestClose={onClose}
+        accessible={true}
+        accessibilityViewIsModal={true}
+        accessibilityLabel="Gerenciar treinos"
       >
         <View style={styles.container}>
           {/* Header */}

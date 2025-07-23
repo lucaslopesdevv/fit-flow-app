@@ -1,12 +1,17 @@
 import React from 'react'
 import { Card as PaperCard, CardProps as PaperCardProps } from 'react-native-paper'
-import { StyleSheet, ViewStyle } from 'react-native'
+import { StyleSheet, ViewStyle, AccessibilityRole } from 'react-native'
+import { useTheme } from '@/context/ThemeContext'
 
 interface CardProps extends Omit<PaperCardProps, 'elevation'> {
   children: React.ReactNode
   variant?: 'elevated' | 'outlined' | 'contained'
   padding?: 'none' | 'small' | 'medium' | 'large'
   elevation?: 0 | 1 | 2 | 3 | 4 | 5
+  accessibilityLabel?: string
+  accessibilityHint?: string
+  accessibilityRole?: AccessibilityRole
+  onPress?: () => void
 }
 
 export function Card({
@@ -15,8 +20,14 @@ export function Card({
   padding = 'medium',
   style,
   elevation,
+  accessibilityLabel,
+  accessibilityHint,
+  accessibilityRole,
+  onPress,
   ...props
 }: CardProps) {
+  const { theme } = useTheme()
+
   const getPaddingStyle = (): ViewStyle => {
     switch (padding) {
       case 'none':
@@ -30,12 +41,45 @@ export function Card({
     }
   }
 
+  // Dynamic styles based on theme
+  const dynamicStyles = StyleSheet.create({
+    outlined: {
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+      backgroundColor: theme.colors.surface,
+    },
+    elevated: {
+      backgroundColor: theme.colors.surface,
+    },
+    contained: {
+      backgroundColor: theme.colors.surfaceVariant,
+    },
+  })
+
+  // Common accessibility props
+  const accessibilityProps = {
+    accessible: true,
+    accessibilityLabel,
+    accessibilityHint,
+    accessibilityRole: accessibilityRole || (onPress ? 'button' : undefined),
+    onPress,
+  }
+
+  // Ensure minimum touch target if pressable
+  const touchTargetStyle = onPress ? styles.touchTarget : {}
+
   if (variant === 'elevated') {
     // Remove any mode from props to avoid conflict
     const { mode: _mode, ...rest } = props as any
     const cardProps = elevation !== undefined ? { elevation, ...rest } : { ...rest }
     return (
-      <PaperCard mode="elevated" style={[styles.base, styles.elevated, style]} {...cardProps}>
+      <PaperCard
+        mode="elevated"
+        style={[styles.base, dynamicStyles.elevated, touchTargetStyle, style]}
+        theme={theme}
+        {...cardProps}
+        {...accessibilityProps}
+      >
         <PaperCard.Content style={getPaddingStyle()}>{children}</PaperCard.Content>
       </PaperCard>
     )
@@ -43,7 +87,13 @@ export function Card({
 
   if (variant === 'outlined') {
     return (
-      <PaperCard mode="outlined" style={[styles.base, styles.outlined, style]} {...props}>
+      <PaperCard
+        mode="outlined"
+        style={[styles.base, dynamicStyles.outlined, touchTargetStyle, style]}
+        theme={theme}
+        {...props}
+        {...accessibilityProps}
+      >
         <PaperCard.Content style={getPaddingStyle()}>{children}</PaperCard.Content>
       </PaperCard>
     )
@@ -51,7 +101,13 @@ export function Card({
 
   // contained
   return (
-    <PaperCard mode="contained" style={[styles.base, styles.contained, style]} {...props}>
+    <PaperCard
+      mode="contained"
+      style={[styles.base, dynamicStyles.contained, touchTargetStyle, style]}
+      theme={theme}
+      {...props}
+      {...accessibilityProps}
+    >
       <PaperCard.Content style={getPaddingStyle()}>{children}</PaperCard.Content>
     </PaperCard>
   )
@@ -67,12 +123,6 @@ const styles = StyleSheet.create({
   base: {
     marginVertical: 4,
   },
-  elevated: {}, // No elevation in style, handled by mode prop
-  outlined: {
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.12)',
-  },
-  contained: {},
   paddingSmall: {
     padding: 8,
   },
@@ -81,5 +131,9 @@ const styles = StyleSheet.create({
   },
   paddingLarge: {
     padding: 24,
+  },
+  // Ensure minimum touch target for pressable cards
+  touchTarget: {
+    minHeight: 44,
   },
 })

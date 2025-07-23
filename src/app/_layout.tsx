@@ -1,13 +1,28 @@
 import { AuthProvider, useAuth } from '../hooks/useAuth'
 import { Redirect, Slot, usePathname } from 'expo-router'
 import React from 'react'
-import { View, ActivityIndicator, Text, StyleSheet } from 'react-native'
-import { PaperProvider, MD3LightTheme, Button } from 'react-native-paper'
+import { View, ActivityIndicator, Text, StyleSheet, StatusBar } from 'react-native'
+import { PaperProvider } from 'react-native-paper'
+import { Button } from '@/components/common/Button'
+import { ThemeProvider, useTheme } from '@/context/ThemeContext'
 
 export default function RootLayout() {
   return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  )
+}
+
+function AppContent() {
+  const { theme, mode } = useTheme()
+
+  // Ajusta a barra de status com base no tema
+  StatusBar.setBarStyle(mode === 'dark' ? 'light-content' : 'dark-content')
+
+  return (
     <AuthProvider>
-      <PaperProvider theme={MD3LightTheme}>
+      <PaperProvider theme={theme}>
         <AuthGate>
           <Slot />
         </AuthGate>
@@ -19,13 +34,16 @@ export default function RootLayout() {
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, signOut } = useAuth()
   const pathname = usePathname()
+  const { theme } = useTheme()
 
   // Show loading state
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200ee" />
-        <Text style={styles.loadingText}>Carregando...</Text>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={[styles.loadingText, { color: theme.colors.onBackground }]}>
+          Carregando...
+        </Text>
       </View>
     )
   }
@@ -43,13 +61,20 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (!isValidRole) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorTitle}>Erro de Acesso</Text>
-        <Text style={styles.errorMessage}>Função de usuário desconhecida: {user.role}</Text>
-        <Text style={styles.errorSubtext}>Entre em contato com o administrador do sistema.</Text>
-        <Button mode="contained" onPress={signOut} style={styles.errorButton}>
-          Fazer Logout
-        </Button>
+      <View style={[styles.errorContainer, { backgroundColor: theme.colors.background }]}>
+        <Text style={[styles.errorTitle, { color: theme.colors.error }]}>Erro de Acesso</Text>
+        <Text style={[styles.errorMessage, { color: theme.colors.onBackground }]}>
+          Função de usuário desconhecida: {user.role}
+        </Text>
+        <Text style={[styles.errorSubtext, { color: theme.colors.onSurfaceVariant }]}>
+          Entre em contato com o administrador do sistema.
+        </Text>
+        <Button
+          variant="contained"
+          onPress={signOut}
+          style={styles.errorButton}
+          title="Fazer Logout"
+        />
       </View>
     )
   }
@@ -71,36 +96,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
     paddingHorizontal: 24,
   },
   errorTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#d32f2f',
     marginBottom: 16,
     textAlign: 'center',
   },
   errorMessage: {
     fontSize: 16,
-    color: '#333',
     marginBottom: 8,
     textAlign: 'center',
   },
   errorSubtext: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 24,
     textAlign: 'center',
   },

@@ -1,4 +1,10 @@
-import { WorkoutError, WorkoutErrorType } from '@/services/api/WorkoutService'
+// Base error class for timeout operations
+export class TimeoutError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'TimeoutError'
+  }
+}
 
 export interface TimeoutOptions {
   timeout?: number
@@ -18,7 +24,7 @@ export function withTimeout<T>(promise: Promise<T>, options: TimeoutOptions = {}
       if (abortController) {
         abortController.abort()
       }
-      reject(new WorkoutError(WorkoutErrorType.NETWORK_ERROR, timeoutMessage))
+      reject(new TimeoutError(timeoutMessage))
     }, timeout)
 
     promise

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { View, StyleSheet } from 'react-native'
-import { TextInput, Button, Text, useTheme, Dialog, Portal } from 'react-native-paper'
+import { TextInput, Button as PaperButton, Text, Dialog, Portal } from 'react-native-paper'
+import { useTheme } from '@/context/ThemeContext'
+import { Button } from '@/components/common/Button'
 import { useAuth } from '../../hooks/useAuth'
-import { useRouter } from 'expo-router'
 import { useGlobalLoading } from '@/store/useGlobalLoading'
 import { supabase } from '@/services/supabase/supabase'
 
@@ -17,9 +18,8 @@ const LoginScreen = () => {
   const [resetLoading, setResetLoading] = useState(false)
   const [confirmationMsg, setConfirmationMsg] = useState('')
 
-  const { signIn, user } = useAuth()
-  const theme = useTheme()
-  const router = useRouter()
+  const { signIn } = useAuth()
+  const { theme } = useTheme()
   const { showLoading, hideLoading } = useGlobalLoading()
 
   useEffect(() => {
@@ -71,36 +71,61 @@ const LoginScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.appName, { color: theme.colors.primary }]}>FitFlow</Text>
       <Text style={[styles.loginTitle, { color: theme.colors.primary }]}>Login</Text>
       {!!confirmationMsg && (
-        <Text style={{ color: 'green', marginBottom: 12 }}>{confirmationMsg}</Text>
+        <Text style={{ color: theme.dark ? '#4CAF50' : 'green', marginBottom: 12 }}>
+          {confirmationMsg}
+        </Text>
       )}
-      <View style={styles.formCard}>
+      <View
+        style={[
+          styles.formCard,
+          {
+            backgroundColor: theme.colors.surface,
+            shadowColor: theme.dark ? 'rgba(0,0,0,0)' : '#000',
+          },
+        ]}
+      >
         <TextInput
           label="Email"
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.colors.surface }]}
+          textColor={theme.colors.onSurface}
+          theme={theme}
         />
         <TextInput
           label="Password"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.colors.surface }]}
+          textColor={theme.colors.onSurface}
+          theme={theme}
         />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        {success ? <Text style={styles.success}>{success}</Text> : null}
-        <Button mode="contained" onPress={handleLogin} disabled={false} style={styles.button}>
-          Sign in
-        </Button>
-        <Button mode="text" onPress={() => setResetDialogOpen(true)} style={{ marginTop: 8 }}>
-          Resetar minha senha
-        </Button>
+        {error ? <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text> : null}
+        {success ? (
+          <Text style={[styles.success, { color: theme.dark ? '#4CAF50' : '#388e3c' }]}>
+            {success}
+          </Text>
+        ) : null}
+        <Button
+          title="Sign in"
+          variant="contained"
+          onPress={handleLogin}
+          disabled={false}
+          style={styles.button}
+        />
+        <Button
+          title="Resetar minha senha"
+          variant="text"
+          onPress={() => setResetDialogOpen(true)}
+          style={{ marginTop: 8 }}
+        />
         <Portal>
           <Dialog
             visible={resetDialogOpen}
@@ -119,11 +144,17 @@ const LoginScreen = () => {
                 autoCapitalize="none"
                 keyboardType="email-address"
                 style={{ marginBottom: 12 }}
+                textColor={theme.colors.onSurface}
+                theme={theme}
               />
               {resetMsg ? (
                 <Text
                   style={{
-                    color: resetMsg.startsWith('E-mail enviado') ? '#388e3c' : '#d32f2f',
+                    color: resetMsg.startsWith('E-mail enviado')
+                      ? theme.dark
+                        ? '#4CAF50'
+                        : '#388e3c'
+                      : theme.colors.error,
                     marginBottom: 8,
                   }}
                 >
@@ -132,14 +163,14 @@ const LoginScreen = () => {
               ) : null}
             </Dialog.Content>
             <Dialog.Actions>
-              <Button onPress={() => setResetDialogOpen(false)}>Cancelar</Button>
-              <Button
+              <PaperButton onPress={() => setResetDialogOpen(false)}>Cancelar</PaperButton>
+              <PaperButton
                 onPress={handleSendReset}
                 loading={resetLoading}
                 disabled={!resetEmail || resetLoading}
               >
                 Enviar
-              </Button>
+              </PaperButton>
             </Dialog.Actions>
           </Dialog>
         </Portal>
@@ -153,7 +184,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
     paddingHorizontal: 24,
   },
   appName: {
@@ -173,10 +203,8 @@ const styles = StyleSheet.create({
   formCard: {
     width: '100%',
     maxWidth: 400,
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -184,7 +212,6 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 16,
-    backgroundColor: '#fff',
   },
   button: {
     marginTop: 8,

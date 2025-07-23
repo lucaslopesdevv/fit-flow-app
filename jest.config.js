@@ -11,8 +11,11 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-navigation|expo|@expo|react-native-paper|react-native-vector-icons|react-native-gesture-handler|react-native-reanimated|@supabase|react-native-svg)/)',
+    'node_modules/(?!(react-native|@react-native|@react-navigation|expo|@expo|react-native-paper|react-native-vector-icons|react-native-gesture-handler|react-native-reanimated|@supabase|react-native-svg|@react-native/js-polyfills)/)',
   ],
   testEnvironment: 'node',
   testPathIgnorePatterns: ['<rootDir>/.history/', '<rootDir>/node_modules/'],
+  globals: {
+    __DEV__: true,
+  },
 }

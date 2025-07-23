@@ -1,6 +1,6 @@
 import { supabase } from '../supabase/supabase'
-import { Workout, WorkoutExercise, Exercise, Profile, Database } from '@/types/database'
-import { withTimeout, TimeoutOptions } from '@/utils/timeoutHandler'
+import { Workout, WorkoutExercise, Exercise, Profile } from '@/types/database'
+import { withTimeout, TimeoutOptions, TimeoutError } from '@/utils/timeoutHandler'
 
 // Extended types for workout operations
 export interface WorkoutWithExercises extends Workout {
@@ -65,11 +65,18 @@ export class WorkoutService {
     workoutData: CreateWorkoutRequest,
     timeoutOptions?: TimeoutOptions
   ): Promise<WorkoutWithExercises> {
-    return withTimeout(this.executeCreateWorkout(instructorId, workoutData), {
-      timeout: this.DEFAULT_TIMEOUT,
-      timeoutMessage: 'Tempo limite para criar treino excedido. Tente novamente.',
-      ...timeoutOptions,
-    })
+    try {
+      return await withTimeout(this.executeCreateWorkout(instructorId, workoutData), {
+        timeout: this.DEFAULT_TIMEOUT,
+        timeoutMessage: 'Tempo limite para criar treino excedido. Tente novamente.',
+        ...timeoutOptions,
+      })
+    } catch (error) {
+      if (error instanceof TimeoutError) {
+        throw new WorkoutError(WorkoutErrorType.NETWORK_ERROR, error.message)
+      }
+      throw error
+    }
   }
 
   private static async executeCreateWorkout(
@@ -103,7 +110,7 @@ export class WorkoutService {
       }
 
       // Create workout exercises
-      if (workoutData.exercises.length > 0) {
+      if (workoutData.exercises && workoutData.exercises.length > 0) {
         const workoutExercises = workoutData.exercises.map(exercise => ({
           workout_id: workout.id,
           exercise_id: exercise.exerciseId,
@@ -111,7 +118,7 @@ export class WorkoutService {
           reps: exercise.reps,
           rest_seconds: exercise.restSeconds,
           order_index: exercise.orderIndex,
-          notes: exercise.notes,
+          notes: exercise.notes || null,
         }))
 
         const { error: exercisesError } = await supabase
@@ -143,7 +150,7 @@ export class WorkoutService {
       }
       throw new WorkoutError(
         WorkoutErrorType.NETWORK_ERROR,
-        `Unexpected error creating workout: ${error}`
+        `Unexpected error creating workout: ${error instanceof Error ? error.message : String(error)}`
       )
     }
   }
@@ -178,7 +185,9 @@ export class WorkoutService {
       // Fetch students
       const { data: students, error: studentsError } = await supabase
         .from('profiles')
-        .select('id, full_name, email, avatar_url')
+        .select(
+          'id, full_name, email, avatar_url, phone, instructor_id, role, created_at, updated_at, is_active'
+        )
         .in('id', studentIds)
 
       if (studentsError) {
@@ -220,7 +229,7 @@ export class WorkoutService {
       }
       throw new WorkoutError(
         WorkoutErrorType.NETWORK_ERROR,
-        `Unexpected error fetching instructor workouts: ${error}`
+        `Unexpected error fetching instructor workouts: ${error instanceof Error ? error.message : String(error)}`
       )
     }
   }
@@ -255,7 +264,9 @@ export class WorkoutService {
       // Fetch instructors
       const { data: instructors, error: instructorsError } = await supabase
         .from('profiles')
-        .select('id, full_name, email, avatar_url')
+        .select(
+          'id, full_name, email, avatar_url, phone, instructor_id, role, created_at, updated_at, is_active'
+        )
         .in('id', instructorIds)
 
       if (instructorsError) {
@@ -297,7 +308,7 @@ export class WorkoutService {
       }
       throw new WorkoutError(
         WorkoutErrorType.NETWORK_ERROR,
-        `Unexpected error fetching student workouts: ${error}`
+        `Unexpected error fetching student workouts: ${error instanceof Error ? error.message : String(error)}`
       )
     }
   }
@@ -327,14 +338,18 @@ export class WorkoutService {
       // Get student details
       const { data: student } = await supabase
         .from('profiles')
-        .select('id, full_name, email, avatar_url')
+        .select(
+          'id, full_name, email, avatar_url, phone, instructor_id, role, created_at, updated_at, is_active'
+        )
         .eq('id', workout.student_id)
         .single()
 
       // Get instructor details
       const { data: instructor } = await supabase
         .from('profiles')
-        .select('id, full_name, email, avatar_url')
+        .select(
+          'id, full_name, email, avatar_url, phone, instructor_id, role, created_at, updated_at, is_active'
+        )
         .eq('id', workout.instructor_id)
         .single()
 
@@ -367,7 +382,7 @@ export class WorkoutService {
       }
       throw new WorkoutError(
         WorkoutErrorType.NETWORK_ERROR,
-        `Unexpected error fetching workout details: ${error}`
+        `Unexpected error fetching workout details: ${error instanceof Error ? error.message : String(error)}`
       )
     }
   }
@@ -419,7 +434,7 @@ export class WorkoutService {
         }
 
         // Insert new exercises
-        if (updateData.exercises.length > 0) {
+        if (updateData.exercises && updateData.exercises.length > 0) {
           const workoutExercises = updateData.exercises.map(exercise => ({
             workout_id: workoutId,
             exercise_id: exercise.exerciseId,
@@ -427,7 +442,7 @@ export class WorkoutService {
             reps: exercise.reps,
             rest_seconds: exercise.restSeconds,
             order_index: exercise.orderIndex,
-            notes: exercise.notes,
+            notes: exercise.notes || null,
           }))
 
           const { error: insertError } = await supabase
@@ -456,7 +471,7 @@ export class WorkoutService {
       }
       throw new WorkoutError(
         WorkoutErrorType.NETWORK_ERROR,
-        `Unexpected error updating workout: ${error}`
+        `Unexpected error updating workout: ${error instanceof Error ? error.message : String(error)}`
       )
     }
   }
@@ -500,7 +515,7 @@ export class WorkoutService {
       }
       throw new WorkoutError(
         WorkoutErrorType.NETWORK_ERROR,
-        `Unexpected error deleting workout: ${error}`
+        `Unexpected error deleting workout: ${error instanceof Error ? error.message : String(error)}`
       )
     }
   }
@@ -520,16 +535,7 @@ export class WorkoutService {
     try {
       let query = supabase
         .from('workouts')
-        .select(
-          `
-          *,
-          student:profiles!workouts_student_id_fkey(id, full_name, email, avatar_url),
-          workout_exercises(
-            *,
-            exercise:exercises(*)
-          )
-        `
-        )
+        .select('*')
         .eq('instructor_id', instructorId)
         .order('created_at', { ascending: false })
 
@@ -551,7 +557,7 @@ export class WorkoutService {
         query = query.range(options.offset, options.offset + (options.limit || 10) - 1)
       }
 
-      const { data, error } = await query
+      const { data: workouts, error } = await query
 
       if (error) {
         throw new WorkoutError(
@@ -560,14 +566,54 @@ export class WorkoutService {
         )
       }
 
-      return (data || []).map(this.transformWorkoutData)
+      if (!workouts || workouts.length === 0) {
+        return []
+      }
+
+      // Get related data separately
+      const workoutIds = workouts.map(w => w.id)
+      const studentIds = [...new Set(workouts.map(w => w.student_id))]
+
+      // Fetch students
+      const { data: students } = await supabase
+        .from('profiles')
+        .select(
+          'id, full_name, email, avatar_url, phone, instructor_id, role, created_at, updated_at, is_active'
+        )
+        .in('id', studentIds)
+
+      // Fetch workout exercises
+      const { data: workoutExercises } = await supabase
+        .from('workout_exercises')
+        .select(
+          `
+          *,
+          exercise:exercises(*)
+        `
+        )
+        .in('workout_id', workoutIds)
+        .order('order_index')
+
+      // Combine the data
+      const data = workouts.map(workout => ({
+        ...workout,
+        student: students?.find(s => s.id === workout.student_id) || null,
+        exercises: (workoutExercises || [])
+          .filter(we => we.workout_id === workout.id)
+          .map(we => ({
+            ...we,
+            exercise: we.exercise,
+          })),
+      }))
+
+      return data.map(this.transformWorkoutData)
     } catch (error) {
       if (error instanceof WorkoutError) {
         throw error
       }
       throw new WorkoutError(
         WorkoutErrorType.NETWORK_ERROR,
-        `Unexpected error searching workouts: ${error}`
+        `Unexpected error searching workouts: ${error instanceof Error ? error.message : String(error)}`
       )
     }
   }
@@ -631,7 +677,9 @@ export class WorkoutService {
           if (mostActiveStudentId) {
             const { data: student } = await supabase
               .from('profiles')
-              .select('id, full_name, email, avatar_url')
+              .select(
+                'id, full_name, email, avatar_url, phone, instructor_id, role, created_at, updated_at, is_active'
+              )
               .eq('id', mostActiveStudentId)
               .single()
 
@@ -680,7 +728,7 @@ export class WorkoutService {
       // Create the duplicate
       const duplicateData: CreateWorkoutRequest = {
         name: newName || `${originalWorkout.name} (Cópia)`,
-        description: originalWorkout.description,
+        description: originalWorkout.description || undefined,
         studentId: newStudentId || originalWorkout.student_id,
         exercises: originalWorkout.exercises.map(we => ({
           exerciseId: we.exercise_id,
@@ -688,7 +736,7 @@ export class WorkoutService {
           reps: we.reps,
           restSeconds: we.rest_seconds,
           orderIndex: we.order_index,
-          notes: we.notes,
+          notes: we.notes || undefined,
         })),
       }
 
@@ -709,7 +757,7 @@ export class WorkoutService {
       }
       throw new WorkoutError(
         WorkoutErrorType.NETWORK_ERROR,
-        `Unexpected error duplicating workout: ${error}`
+        `Unexpected error duplicating workout: ${error instanceof Error ? error.message : String(error)}`
       )
     }
   }
@@ -771,7 +819,7 @@ export class WorkoutService {
 
     // Validate each exercise
     data.exercises.forEach((exercise, index) => {
-      if (!exercise.exerciseId) {
+      if (!exercise.exerciseId?.trim()) {
         throw new WorkoutError(
           WorkoutErrorType.VALIDATION_ERROR,
           `Exercise ${index + 1}: Exercise selection is required`,
@@ -779,7 +827,7 @@ export class WorkoutService {
         )
       }
 
-      if (!exercise.sets || exercise.sets < 1) {
+      if (typeof exercise.sets !== 'number' || exercise.sets < 1) {
         throw new WorkoutError(
           WorkoutErrorType.VALIDATION_ERROR,
           `Exercise ${index + 1}: Number of sets must be at least 1`,
@@ -795,11 +843,19 @@ export class WorkoutService {
         )
       }
 
-      if (exercise.restSeconds < 0) {
+      if (typeof exercise.restSeconds !== 'number' || exercise.restSeconds < 0) {
         throw new WorkoutError(
           WorkoutErrorType.VALIDATION_ERROR,
           `Exercise ${index + 1}: Rest time cannot be negative`,
           `exercises.${index}.restSeconds`
+        )
+      }
+
+      if (typeof exercise.orderIndex !== 'number' || exercise.orderIndex < 0) {
+        throw new WorkoutError(
+          WorkoutErrorType.VALIDATION_ERROR,
+          `Exercise ${index + 1}: Order index must be a valid number`,
+          `exercises.${index}.orderIndex`
         )
       }
     })
@@ -811,12 +867,23 @@ export class WorkoutService {
   ): Promise<void> {
     const { data, error } = await supabase
       .from('profiles')
-      .select('instructor_id')
+      .select('instructor_id, role')
       .eq('id', studentId)
       .single()
 
     if (error) {
       throw new WorkoutError(WorkoutErrorType.NOT_FOUND_ERROR, 'Student not found')
+    }
+
+    if (!data) {
+      throw new WorkoutError(WorkoutErrorType.NOT_FOUND_ERROR, 'Student not found')
+    }
+
+    if (data.role !== 'student') {
+      throw new WorkoutError(
+        WorkoutErrorType.PERMISSION_ERROR,
+        'You can only create workouts for students'
+      )
     }
 
     if (data.instructor_id !== instructorId) {
@@ -841,6 +908,10 @@ export class WorkoutService {
       throw new WorkoutError(WorkoutErrorType.NOT_FOUND_ERROR, 'Workout not found')
     }
 
+    if (!data) {
+      throw new WorkoutError(WorkoutErrorType.NOT_FOUND_ERROR, 'Workout not found')
+    }
+
     if (data.instructor_id !== instructorId) {
       throw new WorkoutError(
         WorkoutErrorType.PERMISSION_ERROR,
@@ -853,10 +924,12 @@ export class WorkoutService {
     return {
       ...data,
       exercises: (data.exercises || [])
-        .sort((a: any, b: any) => a.order_index - b.order_index)
+        .filter((we: any) => we && we.exercise) // Filter out invalid exercises
+        .sort((a: any, b: any) => (a.order_index || 0) - (b.order_index || 0))
         .map((we: any) => ({
           ...we,
           exercise: we.exercise,
+          notes: we.notes || undefined, // Ensure consistent null handling
         })),
     }
   }

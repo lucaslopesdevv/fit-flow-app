@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   View,
   Modal,
@@ -13,16 +13,25 @@ import { Input } from '@/components/common/Input'
 import { Button } from '@/components/common/Button'
 import { Card } from '@/components/common/Card'
 import { useAuth } from '@/hooks/useAuth'
+import { useTheme } from '@/context/ThemeContext'
 import {
   CreateWorkoutModalProps,
   WorkoutFormState,
   WorkoutCreationStep,
   WorkoutExerciseConfig,
   Profile,
-  Exercise,
   WorkoutWithExercises,
 } from '@/types/database'
 import { WorkoutFormWrapper, useWorkoutOperations } from '../workout'
+import {
+  announceForAccessibility,
+  getFieldAccessibilityProps,
+  getButtonAccessibilityProps,
+  getModalAccessibilityProps,
+  getProgressAccessibilityProps,
+  getListItemAccessibilityProps,
+} from '@/utils/accessibility'
+import * as Haptics from 'expo-haptics'
 
 const INITIAL_FORM_STATE: WorkoutFormState = {
   name: '',
@@ -42,8 +51,12 @@ export default function CreateWorkoutModal({
   editingWorkout = null,
 }: CreateWorkoutModalProps) {
   const { user } = useAuth()
+  const { theme } = useTheme()
   const [formState, setFormState] = useState<WorkoutFormState>(INITIAL_FORM_STATE)
   const [selectedStudent, setSelectedStudent] = useState<Profile | null>(null)
+
+  // Create dynamic styles based on theme
+  const styles = useMemo(() => createStyles(theme), [theme])
 
   const {
     createWorkout,
@@ -146,6 +159,8 @@ export default function CreateWorkoutModal({
 
   const handleStudentSelect = (studentId: string) => {
     updateFormState({ studentId })
+    // Provide haptic feedback for selection
+    Haptics.selectionAsync()
   }
 
   const validateCurrentStep = (): boolean => {
@@ -168,9 +183,13 @@ export default function CreateWorkoutModal({
 
   const handleNextStep = () => {
     if (!validateCurrentStep()) {
+      const errorMessage = 'Por favor, preencha todos os campos obrigatórios.'
       updateFormState({
-        error: 'Por favor, preencha todos os campos obrigatórios.',
+        error: errorMessage,
       })
+      announceForAccessibility(errorMessage)
+      // Provide error haptic feedback
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
       return
     }
 
@@ -178,10 +197,17 @@ export default function CreateWorkoutModal({
     const currentIndex = steps.indexOf(formState.currentStep)
 
     if (currentIndex < steps.length - 1) {
+      const stepNames = ['Informações', 'Exercícios', 'Configuração', 'Revisão']
+      const nextStepName = stepNames[currentIndex + 1]
+
       updateFormState({
         currentStep: steps[currentIndex + 1],
         error: null,
       })
+
+      announceForAccessibility(`Avançou para: ${nextStepName}`)
+      // Provide haptic feedback for step progression
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
   }
 
@@ -239,6 +265,8 @@ export default function CreateWorkoutModal({
 
       updateFormState({ loading: false })
       await clearPersistedFormData()
+      // Provide success haptic feedback
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       onSuccess(savedWorkout)
       onClose()
     } catch (error) {
@@ -283,14 +311,28 @@ export default function CreateWorkoutModal({
   const renderStepIndicator = () => {
     const steps = Object.values(WorkoutCreationStep)
     const currentIndex = steps.indexOf(formState.currentStep)
+    const stepNames = ['Informações', 'Exercícios', 'Configuração', 'Revisão']
 
     return (
-      <View style={styles.stepIndicator}>
+      <View
+        style={styles.stepIndicator}
+        {...getProgressAccessibilityProps(
+          currentIndex + 1,
+          steps.length,
+          `Etapa ${stepNames[currentIndex]}`
+        )}
+      >
         {steps.map((step, index) => (
           <View key={step} style={styles.stepIndicatorItem}>
-            <View style={[styles.stepCircle, index <= currentIndex && styles.stepCircleActive]}>
+            <View
+              style={[styles.stepCircle, index <= currentIndex && styles.stepCircleActive]}
+              accessible={true}
+              accessibilityLabel={`Etapa ${index + 1}: ${stepNames[index]}${index === currentIndex ? ' (atual)' : index < currentIndex ? ' (concluída)' : ' (pendente)'}`}
+            >
               <ThemedText
                 style={[styles.stepNumber, index <= currentIndex && styles.stepNumberActive]}
+                accessibilityElementsHidden={true}
+                importantForAccessibility="no"
               >
                 {index + 1}
               </ThemedText>
@@ -309,16 +351,16 @@ export default function CreateWorkoutModal({
       <ThemedText type="subtitle" style={styles.stepTitle}>
         Informações Básicas
       </ThemedText>
-
       <Input
-        label="Nome do Treino *"
+        label="Nome do Treino"
         value={formState.name}
         onChangeText={name => updateFormState({ name })}
         placeholder="Ex: Treino de Peito e Tríceps"
         style={styles.input}
+        required={true}
         accessibilityLabel="Nome do treino"
+        accessibilityHint="Insira o nome do treino"
       />
-
       <Input
         label="Descrição (opcional)"
         value={formState.description}
@@ -328,11 +370,18 @@ export default function CreateWorkoutModal({
         numberOfLines={3}
         style={styles.input}
         accessibilityLabel="Descrição do treino"
+        accessibilityHint="Insira uma descrição opcional para o treino"
       />
 
       <ThemedText style={styles.label}>Aluno *</ThemedText>
-      <ScrollView style={styles.studentList} showsVerticalScrollIndicator={false}>
-        {instructorStudents.map(student => (
+      <ScrollView
+        style={styles.studentList}
+        showsVerticalScrollIndicator={false}
+        accessible={true}
+        accessibilityLabel="Lista de alunos"
+        accessibilityHint="Selecione um aluno para criar o treino"
+      >
+        {instructorStudents.map((student, index) => (
           <Card
             key={student.id}
             style={[
@@ -340,9 +389,12 @@ export default function CreateWorkoutModal({
               formState.studentId === student.id && styles.studentCardSelected,
             ]}
             onPress={() => handleStudentSelect(student.id)}
-            accessible
-            accessibilityLabel={`Selecionar aluno ${student.full_name}`}
-            accessibilityRole="button"
+            {...getListItemAccessibilityProps(
+              student.full_name,
+              index + 1,
+              instructorStudents.length,
+              formState.studentId === student.id
+            )}
           >
             <View style={styles.studentInfo}>
               <ThemedText type="subtitle">{student.full_name}</ThemedText>
@@ -448,6 +500,10 @@ export default function CreateWorkoutModal({
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
+      {...getModalAccessibilityProps(
+        editingWorkout ? 'Editar treino' : 'Criar novo treino',
+        'Modal para criação e edição de treinos'
+      )}
     >
       <KeyboardAvoidingView
         style={styles.container}
@@ -497,7 +553,11 @@ export default function CreateWorkoutModal({
                 onPress={handlePreviousStep}
                 disabled={operationLoading}
                 style={styles.footerButton}
-                accessibilityLabel="Voltar para etapa anterior"
+                {...getButtonAccessibilityProps(
+                  'Voltar para etapa anterior',
+                  false,
+                  operationLoading
+                )}
               />
             )}
 
@@ -507,9 +567,11 @@ export default function CreateWorkoutModal({
               onPress={isLastStep ? handleSaveWorkout : handleNextStep}
               disabled={!canProceed || operationLoading}
               style={[styles.footerButton, styles.primaryButton]}
-              accessibilityLabel={
-                isLastStep ? (editingWorkout ? 'Salvar treino' : 'Criar treino') : 'Próxima etapa'
-              }
+              {...getButtonAccessibilityProps(
+                isLastStep ? (editingWorkout ? 'Salvar treino' : 'Criar treino') : 'Próxima etapa',
+                operationLoading,
+                !canProceed || operationLoading
+              )}
             />
           </View>
         </WorkoutFormWrapper>
@@ -518,185 +580,186 @@ export default function CreateWorkoutModal({
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-  },
-  headerSpacer: {
-    width: 80, // Same width as cancel button
-  },
-  stepIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
-    backgroundColor: '#fff',
-  },
-  stepIndicatorItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  stepCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#e9ecef',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepCircleActive: {
-    backgroundColor: '#2563eb',
-  },
-  stepNumber: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6c757d',
-  },
-  stepNumberActive: {
-    color: '#fff',
-  },
-  stepLine: {
-    width: 40,
-    height: 2,
-    backgroundColor: '#e9ecef',
-    marginHorizontal: 8,
-  },
-  stepLineActive: {
-    backgroundColor: '#2563eb',
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  stepContent: {
-    flex: 1,
-  },
-  stepTitle: {
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#212529',
-  },
-  studentList: {
-    maxHeight: 200,
-    marginBottom: 16,
-  },
-  studentCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    marginBottom: 8,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  studentCardSelected: {
-    borderColor: '#2563eb',
-    backgroundColor: '#f0f7ff',
-  },
-  studentInfo: {
-    flex: 1,
-  },
-  studentEmail: {
-    color: '#6c757d',
-    marginTop: 4,
-  },
-  selectedIndicator: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#2563eb',
-  },
-  emptyState: {
-    padding: 24,
-    alignItems: 'center',
-  },
-  emptyStateText: {
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  emptyStateSubtext: {
-    color: '#6c757d',
-    textAlign: 'center',
-  },
-  previewCard: {
-    padding: 20,
-  },
-  previewDescription: {
-    color: '#6c757d',
-    marginTop: 8,
-    marginBottom: 12,
-  },
-  previewStudent: {
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  previewExercises: {
-    color: '#2563eb',
-    fontWeight: '600',
-  },
-  errorCard: {
-    backgroundColor: '#fee',
-    borderColor: '#dc3545',
-    borderWidth: 1,
-    marginTop: 16,
-  },
-  errorText: {
-    color: '#dc3545',
-    textAlign: 'center',
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#e9ecef',
-  },
-  footerButton: {
-    flex: 1,
-    marginHorizontal: 8,
-  },
-  primaryButton: {
-    backgroundColor: '#2563eb',
-  },
-  loadingContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    marginLeft: 12,
-    color: '#6c757d',
-  },
-})
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      backgroundColor: theme.colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.outline,
+    },
+    headerTitle: {
+      flex: 1,
+      textAlign: 'center',
+    },
+    headerSpacer: {
+      width: 80, // Same width as cancel button
+    },
+    stepIndicator: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 20,
+      backgroundColor: theme.colors.surface,
+    },
+    stepIndicatorItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    stepCircle: {
+      width: 44, // Increased for better touch target
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: theme.colors.surfaceVariant,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    stepCircleActive: {
+      backgroundColor: theme.colors.primary,
+    },
+    stepNumber: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.onSurfaceVariant,
+    },
+    stepNumberActive: {
+      color: theme.colors.onPrimary,
+    },
+    stepLine: {
+      width: 40,
+      height: 2,
+      backgroundColor: theme.colors.surfaceVariant,
+      marginHorizontal: 8,
+    },
+    stepLineActive: {
+      backgroundColor: theme.colors.primary,
+    },
+    content: {
+      flex: 1,
+    },
+    contentContainer: {
+      padding: 16,
+      paddingBottom: 32,
+    },
+    stepContent: {
+      flex: 1,
+    },
+    stepTitle: {
+      marginBottom: 20,
+      textAlign: 'center',
+    },
+    input: {
+      marginBottom: 16,
+    },
+    label: {
+      fontSize: 16,
+      fontWeight: '600',
+      marginBottom: 8,
+      color: theme.colors.onSurface,
+    },
+    studentList: {
+      maxHeight: 200,
+      marginBottom: 16,
+    },
+    studentCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: 16,
+      marginBottom: 8,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    studentCardSelected: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primaryContainer,
+    },
+    studentInfo: {
+      flex: 1,
+    },
+    studentEmail: {
+      color: theme.colors.onSurfaceVariant,
+      marginTop: 4,
+    },
+    selectedIndicator: {
+      width: 24, // Increased for better visibility
+      height: 24,
+      borderRadius: 12,
+      backgroundColor: theme.colors.primary,
+    },
+    emptyState: {
+      padding: 24,
+      alignItems: 'center',
+    },
+    emptyStateText: {
+      fontSize: 16,
+      fontWeight: '600',
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    emptyStateSubtext: {
+      color: theme.colors.onSurfaceVariant,
+      textAlign: 'center',
+    },
+    previewCard: {
+      padding: 20,
+    },
+    previewDescription: {
+      color: theme.colors.onSurfaceVariant,
+      marginTop: 8,
+      marginBottom: 12,
+    },
+    previewStudent: {
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    previewExercises: {
+      color: theme.colors.primary,
+      fontWeight: '600',
+    },
+    errorCard: {
+      backgroundColor: '#fee',
+      borderColor: '#dc3545',
+      borderWidth: 1,
+      marginTop: 16,
+    },
+    errorText: {
+      color: '#dc3545',
+      textAlign: 'center',
+    },
+    footer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      backgroundColor: theme.colors.surface,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.outline,
+    },
+    footerButton: {
+      flex: 1,
+      marginHorizontal: 8,
+    },
+    primaryButton: {
+      backgroundColor: theme.colors.primary,
+    },
+    loadingContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    loadingText: {
+      marginLeft: 12,
+      color: theme.colors.onSurfaceVariant,
+    },
+  })

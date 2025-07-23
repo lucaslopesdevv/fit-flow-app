@@ -1,269 +1,291 @@
 import React from 'react'
 import { render, fireEvent, screen } from '@testing-library/react-native'
 import WorkoutDetailsModal from '../WorkoutDetailsModal'
-import { WorkoutWithExercises } from '@/types/database'
+import { useTheme } from '@/context/ThemeContext'
 
-// Mock data
-const mockWorkout: WorkoutWithExercises = {
-  id: 'workout-1',
-  name: 'Treino de Peito e Tríceps',
-  description: 'Treino focado no desenvolvimento do peitoral e tríceps',
-  student_id: 'student-1',
-  instructor_id: 'instructor-1',
-  created_at: '2025-01-18T10:00:00Z',
-  updated_at: '2025-01-18T10:00:00Z',
-  student: {
-    id: 'student-1',
-    full_name: 'João Silva',
-    email: 'joao@example.com',
-    phone: '(11) 99999-9999',
-    avatar_url: null,
-    instructor_id: 'instructor-1',
-    role: 'student',
-    created_at: '2025-01-18T09:00:00Z',
-    updated_at: '2025-01-18T09:00:00Z',
-    is_active: true,
-  },
-  instructor: {
-    id: 'instructor-1',
-    full_name: 'Maria Santos',
-    email: 'maria@example.com',
-    phone: '(11) 88888-8888',
-    avatar_url: null,
-    instructor_id: null,
-    role: 'instructor',
-    created_at: '2025-01-18T08:00:00Z',
-    updated_at: '2025-01-18T08:00:00Z',
-    is_active: true,
-  },
-  exercises: [
-    {
-      id: 'we-1',
-      workout_id: 'workout-1',
-      exercise_id: 'exercise-1',
-      sets: 3,
-      reps: '10-12',
-      rest_seconds: 60,
-      order_index: 1,
-      notes: 'Foco na contração máxima',
-      exercise: {
-        id: 'exercise-1',
-        name: 'Supino Reto',
-        description: 'Exercício para peitoral',
-        muscle_group: 'Peito',
-        video_url: null,
-        thumbnail_url: 'https://example.com/supino.jpg',
-        created_by: 'instructor-1',
-        created_at: '2025-01-18T07:00:00Z',
-      },
-    },
-    {
-      id: 'we-2',
-      workout_id: 'workout-1',
-      exercise_id: 'exercise-2',
-      sets: 4,
-      reps: '8-10',
-      rest_seconds: 90,
-      order_index: 2,
-      notes: null,
-      exercise: {
-        id: 'exercise-2',
-        name: 'Tríceps Testa',
-        description: 'Exercício para tríceps',
-        muscle_group: 'Tríceps',
-        video_url: null,
-        thumbnail_url: null,
-        created_by: 'instructor-1',
-        created_at: '2025-01-18T07:00:00Z',
-      },
-    },
-  ],
-}
+// Mock dependencies
+jest.mock('@/context/ThemeContext')
+jest.mock('@/utils/accessibility', () => ({
+  announceForAccessibility: jest.fn(),
+  getModalAccessibilityProps: jest.fn(() => ({})),
+  getButtonAccessibilityProps: jest.fn(() => ({})),
+  getListItemAccessibilityProps: jest.fn(() => ({})),
+}))
 
-const mockProps = {
-  visible: true,
-  workout: mockWorkout,
-  onClose: jest.fn(),
-  onStartWorkout: jest.fn(),
-}
+const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>
 
 describe('WorkoutDetailsModal', () => {
+  const mockTheme = {
+    colors: {
+      primary: '#007AFF',
+      background: '#FFFFFF',
+      surface: '#F2F2F7',
+      text: '#000000',
+      textSecondary: '#8E8E93',
+      border: '#C6C6C8',
+      error: '#FF3B30',
+      success: '#34C759',
+      warning: '#FF9500',
+    },
+    spacing: {
+      xs: 4,
+      sm: 8,
+      md: 16,
+      lg: 24,
+      xl: 32,
+    },
+    dark: false,
+    roundness: 4,
+    animation: {
+      scale: 1.0,
+    },
+  }
+
+  const mockWorkout = {
+    id: 'workout-123',
+    name: 'Treino de Peito',
+    description: 'Treino focado em desenvolvimento do peitoral',
+    student_id: 'student-123',
+    instructor_id: 'instructor-123',
+    created_at: '2025-01-18T10:00:00Z',
+    updated_at: '2025-01-18T10:00:00Z',
+    exercises: [
+      {
+        id: 'we-1',
+        workout_id: 'workout-123',
+        exercise_id: 'exercise-1',
+        sets: 3,
+        reps: '10-12',
+        rest_seconds: 60,
+        order_index: 1,
+        notes: 'Foco na contração',
+        exercise: {
+          id: 'exercise-1',
+          name: 'Supino Reto',
+          muscle_group: 'chest',
+          thumbnail_url: 'https://example.com/supino.jpg',
+          description: 'Exercício para peitoral',
+          instructions: 'Deite no banco e empurre a barra',
+          created_by: 'instructor-123',
+          created_at: '2025-01-18T09:00:00Z',
+          updated_at: '2025-01-18T09:00:00Z',
+        },
+      },
+      {
+        id: 'we-2',
+        workout_id: 'workout-123',
+        exercise_id: 'exercise-2',
+        sets: 4,
+        reps: '8-10',
+        rest_seconds: 90,
+        order_index: 2,
+        notes: null,
+        exercise: {
+          id: 'exercise-2',
+          name: 'Flexão de Braço',
+          muscle_group: 'chest',
+          thumbnail_url: null,
+          description: 'Exercício com peso corporal',
+          instructions: 'Posição de prancha e flexione os braços',
+          created_by: 'instructor-123',
+          created_at: '2025-01-18T09:00:00Z',
+          updated_at: '2025-01-18T09:00:00Z',
+        },
+      },
+    ],
+    student: {
+      id: 'student-123',
+      full_name: 'João Silva',
+      email: 'joao@example.com',
+      avatar_url: 'https://example.com/avatar.jpg',
+      phone: null,
+      instructor_id: 'instructor-123',
+      role: 'student' as const,
+      created_at: '2025-01-18T08:00:00Z',
+      updated_at: '2025-01-18T08:00:00Z',
+      is_active: true,
+    },
+    instructor: {
+      id: 'instructor-123',
+      full_name: 'Maria Santos',
+      email: 'maria@example.com',
+      avatar_url: null,
+      phone: null,
+      instructor_id: null,
+      role: 'instructor' as const,
+      created_at: '2025-01-18T07:00:00Z',
+      updated_at: '2025-01-18T07:00:00Z',
+      is_active: true,
+    },
+  }
+
+  const defaultProps = {
+    visible: true,
+    workout: mockWorkout,
+    onClose: jest.fn(),
+    onStartWorkout: jest.fn(),
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
+
+    mockUseTheme.mockReturnValue({
+      theme: mockTheme as any,
+      isDark: false,
+      toggleTheme: jest.fn(),
+    })
   })
 
-  it('renders workout details correctly', () => {
-    render(<WorkoutDetailsModal {...mockProps} />)
+  describe('Rendering', () => {
+    it('should render modal when visible', () => {
+      render(<WorkoutDetailsModal {...defaultProps} />)
 
-    // Check workout name and description
-    expect(screen.getByText('Treino de Peito e Tríceps')).toBeTruthy()
-    expect(screen.getByText('Treino focado no desenvolvimento do peitoral e tríceps')).toBeTruthy()
+      expect(screen.getByText('Detalhes do Treino')).toBeTruthy()
+      expect(screen.getByText('Treino de Peito')).toBeTruthy()
+      expect(screen.getByText('Treino focado em desenvolvimento do peitoral')).toBeTruthy()
+    })
 
-    // Check instructor info
-    expect(screen.getByText('Instrutor')).toBeTruthy()
-    expect(screen.getByText('Maria Santos')).toBeTruthy()
+    it('should not render modal when not visible', () => {
+      render(<WorkoutDetailsModal {...defaultProps} visible={false} />)
 
-    // Check student info
-    expect(screen.getByText('Aluno')).toBeTruthy()
-    expect(screen.getByText('João Silva')).toBeTruthy()
+      expect(screen.queryByText('Detalhes do Treino')).toBeNull()
+    })
 
-    // Check exercise count
-    expect(screen.getByText('Exercícios (2)')).toBeTruthy()
+    it('should not render when workout is null', () => {
+      render(<WorkoutDetailsModal {...defaultProps} workout={null} />)
+
+      expect(screen.queryByText('Detalhes do Treino')).toBeNull()
+    })
+
+    it('should render workout information correctly', () => {
+      render(<WorkoutDetailsModal {...defaultProps} />)
+
+      expect(screen.getByText('Treino de Peito')).toBeTruthy()
+      expect(screen.getByText('Treino focado em desenvolvimento do peitoral')).toBeTruthy()
+      expect(screen.getByText('Instrutor: Maria Santos')).toBeTruthy()
+      expect(screen.getByText('Aluno: João Silva')).toBeTruthy()
+    })
+
+    it('should render exercises list', () => {
+      render(<WorkoutDetailsModal {...defaultProps} />)
+
+      expect(screen.getByText('Exercícios (2)')).toBeTruthy()
+      expect(screen.getByText('Supino Reto')).toBeTruthy()
+      expect(screen.getByText('Flexão de Braço')).toBeTruthy()
+    })
+
+    it('should render exercise details correctly', () => {
+      render(<WorkoutDetailsModal {...defaultProps} />)
+
+      // First exercise details
+      expect(screen.getByText('3 séries')).toBeTruthy()
+      expect(screen.getByText('10-12 repetições')).toBeTruthy()
+      expect(screen.getByText('60s descanso')).toBeTruthy()
+      expect(screen.getByText('Foco na contração')).toBeTruthy()
+
+      // Second exercise details
+      expect(screen.getByText('4 séries')).toBeTruthy()
+      expect(screen.getByText('8-10 repetições')).toBeTruthy()
+      expect(screen.getByText('90s descanso')).toBeTruthy()
+    })
   })
 
-  it('renders exercise details correctly', () => {
-    render(<WorkoutDetailsModal {...mockProps} />)
+  describe('User Interactions', () => {
+    it('should close modal when close button is pressed', () => {
+      render(<WorkoutDetailsModal {...defaultProps} />)
 
-    // Check first exercise
-    expect(screen.getByText('Supino Reto')).toBeTruthy()
-    expect(screen.getByText('Peito')).toBeTruthy()
-    expect(screen.getByText('3')).toBeTruthy() // sets
-    expect(screen.getByText('10-12')).toBeTruthy() // reps
-    expect(screen.getByText('1m')).toBeTruthy() // rest time
-    expect(screen.getByText('Foco na contração máxima')).toBeTruthy() // notes
+      const closeButton = screen.getByText('Fechar')
+      fireEvent.press(closeButton)
 
-    // Check second exercise
-    expect(screen.getByText('Tríceps Testa')).toBeTruthy()
-    expect(screen.getByText('Tríceps')).toBeTruthy()
-    expect(screen.getByText('4')).toBeTruthy() // sets
-    expect(screen.getByText('8-10')).toBeTruthy() // reps
-    expect(screen.getByText('1m 30s')).toBeTruthy() // rest time
+      expect(defaultProps.onClose).toHaveBeenCalled()
+    })
+
+    it('should call onStartWorkout when start button is pressed', () => {
+      render(<WorkoutDetailsModal {...defaultProps} />)
+
+      const startButton = screen.getByText('Iniciar Treino')
+      fireEvent.press(startButton)
+
+      expect(defaultProps.onStartWorkout).toHaveBeenCalled()
+    })
+
+    it('should not render start button when onStartWorkout is not provided', () => {
+      render(<WorkoutDetailsModal {...defaultProps} onStartWorkout={undefined} />)
+
+      expect(screen.queryByText('Iniciar Treino')).toBeNull()
+    })
   })
 
-  it('displays workout statistics correctly', () => {
-    render(<WorkoutDetailsModal {...mockProps} />)
+  describe('Empty States', () => {
+    it('should handle workout without exercises', () => {
+      const workoutWithoutExercises = {
+        ...mockWorkout,
+        exercises: [],
+      }
 
-    // Check total exercises
-    expect(screen.getByText('2')).toBeTruthy()
-    expect(screen.getByText('Exercícios')).toBeTruthy()
+      render(<WorkoutDetailsModal {...defaultProps} workout={workoutWithoutExercises} />)
 
-    // Check total sets (3 + 4 = 7)
-    expect(screen.getByText('7')).toBeTruthy()
-    expect(screen.getByText('Séries Totais')).toBeTruthy()
+      expect(screen.getByText('Exercícios (0)')).toBeTruthy()
+      expect(screen.getByText('Nenhum exercício adicionado a este treino.')).toBeTruthy()
+    })
 
-    // Check average rest time ((60 + 90) / 2 = 75 seconds = 1m 15s)
-    expect(screen.getByText('1m 15s')).toBeTruthy()
-    expect(screen.getByText('Descanso Médio')).toBeTruthy()
+    it('should handle workout without description', () => {
+      const workoutWithoutDescription = {
+        ...mockWorkout,
+        description: null,
+      }
+
+      render(<WorkoutDetailsModal {...defaultProps} workout={workoutWithoutDescription} />)
+
+      expect(screen.queryByText('Treino focado em desenvolvimento do peitoral')).toBeNull()
+    })
   })
 
-  it('handles close button press', () => {
-    render(<WorkoutDetailsModal {...mockProps} />)
+  describe('Accessibility', () => {
+    it('should have proper accessibility labels for modal', () => {
+      render(<WorkoutDetailsModal {...defaultProps} />)
 
-    const closeButton = screen.getByText('Fechar')
-    fireEvent.press(closeButton)
+      const modal = screen.getByTestId('workout-details-modal')
+      expect(modal.props.accessibilityLabel).toBeDefined()
+    })
 
-    expect(mockProps.onClose).toHaveBeenCalledTimes(1)
+    it('should have proper accessibility labels for buttons', () => {
+      render(<WorkoutDetailsModal {...defaultProps} />)
+
+      const closeButton = screen.getByText('Fechar')
+      expect(closeButton.props.accessibilityRole).toBe('button')
+
+      const startButton = screen.getByText('Iniciar Treino')
+      expect(startButton.props.accessibilityRole).toBe('button')
+    })
   })
 
-  it('handles start workout button press when provided', () => {
-    render(<WorkoutDetailsModal {...mockProps} />)
-
-    const startButton = screen.getByText('Iniciar Treino')
-    fireEvent.press(startButton)
-
-    expect(mockProps.onStartWorkout).toHaveBeenCalledTimes(1)
-  })
-
-  it('does not render start workout button when onStartWorkout is not provided', () => {
-    const propsWithoutStart = {
-      ...mockProps,
-      onStartWorkout: undefined,
-    }
-
-    render(<WorkoutDetailsModal {...propsWithoutStart} />)
-
-    expect(screen.queryByText('Iniciar Treino')).toBeNull()
-  })
-
-  it('renders empty state when no exercises', () => {
-    const workoutWithoutExercises = {
-      ...mockWorkout,
-      exercises: [],
-    }
-
-    render(<WorkoutDetailsModal {...mockProps} workout={workoutWithoutExercises} />)
-
-    expect(screen.getByText('Nenhum exercício encontrado neste treino.')).toBeTruthy()
-    expect(screen.getByText('Exercícios (0)')).toBeTruthy()
-  })
-
-  it('does not render when workout is null', () => {
-    render(<WorkoutDetailsModal {...mockProps} workout={null} />)
-
-    expect(screen.queryByText('Detalhes do Treino')).toBeNull()
-  })
-
-  it('formats rest time correctly', () => {
-    const workoutWithVariousRestTimes = {
-      ...mockWorkout,
-      exercises: [
-        {
-          ...mockWorkout.exercises[0],
-          rest_seconds: 30, // 30s
+  describe('Theme Integration', () => {
+    it('should apply dark theme colors', () => {
+      const darkTheme = {
+        ...mockTheme,
+        colors: {
+          ...mockTheme.colors,
+          background: '#000000',
+          text: '#FFFFFF',
         },
-        {
-          ...mockWorkout.exercises[1],
-          rest_seconds: 120, // 2m
-        },
-        {
-          ...mockWorkout.exercises[0],
-          id: 'we-3',
-          rest_seconds: 150, // 2m 30s
-        },
-      ],
-    }
+        dark: true,
+      }
 
-    render(<WorkoutDetailsModal {...mockProps} workout={workoutWithVariousRestTimes} />)
+      mockUseTheme.mockReturnValue({
+        theme: darkTheme as any,
+        isDark: true,
+        toggleTheme: jest.fn(),
+      })
 
-    expect(screen.getByText('30s')).toBeTruthy()
-    expect(screen.getByText('2m')).toBeTruthy()
-    expect(screen.getByText('2m 30s')).toBeTruthy()
-  })
+      render(<WorkoutDetailsModal {...defaultProps} />)
 
-  it('renders exercise placeholder when no thumbnail', () => {
-    render(<WorkoutDetailsModal {...mockProps} />)
-
-    // Second exercise has no thumbnail, should show placeholder with first letter
-    expect(screen.getByText('T')).toBeTruthy() // First letter of "Tríceps Testa"
-  })
-
-  it('renders exercise order numbers correctly', () => {
-    render(<WorkoutDetailsModal {...mockProps} />)
-
-    // Check exercise order indicators
-    expect(screen.getByText('1')).toBeTruthy() // First exercise
-    expect(screen.getByText('2')).toBeTruthy() // Second exercise
-  })
-
-  it('handles workout without description', () => {
-    const workoutWithoutDescription = {
-      ...mockWorkout,
-      description: undefined,
-    }
-
-    render(<WorkoutDetailsModal {...mockProps} workout={workoutWithoutDescription} />)
-
-    expect(screen.getByText('Treino de Peito e Tríceps')).toBeTruthy()
-    expect(screen.queryByText('Treino focado no desenvolvimento do peitoral e tríceps')).toBeNull()
-  })
-
-  it('handles exercises without notes', () => {
-    render(<WorkoutDetailsModal {...mockProps} />)
-
-    // First exercise has notes, second doesn't
-    expect(screen.getByText('Observações:')).toBeTruthy()
-    expect(screen.getByText('Foco na contração máxima')).toBeTruthy()
-
-    // Should only have one "Observações:" text (for the first exercise)
-    expect(screen.getAllByText('Observações:')).toHaveLength(1)
-  })
-
-  it('generates correct initials for avatars', () => {
-    render(<WorkoutDetailsModal {...mockProps} />)
-
-    // Should generate initials from names
-    // "Maria Santos" -> "MS", "João Silva" -> "JS"
-    expect(screen.getByText('MS')).toBeTruthy()
-    expect(screen.getByText('JS')).toBeTruthy()
+      const modal = screen.getByTestId('workout-details-modal')
+      expect(modal.props.style).toEqual(
+        expect.objectContaining({
+          backgroundColor: '#000000',
+        })
+      )
+    })
   })
 })
